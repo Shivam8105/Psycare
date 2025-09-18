@@ -1,0 +1,52 @@
+# frontend
+# Logs
+PsyCare-Frontend/logs
+PsyCare-Frontend/*.log
+PsyCare-Frontend/npm-debug.log*
+PsyCare-Frontend/yarn-debug.log*
+PsyCare-Frontend/yarn-error.log*
+PsyCare-Frontend/pnpm-debug.log*
+PsyCare-Frontend/lerna-debug.log*
+
+PsyCare-Frontend/node_modules
+PsyCare-Frontend/dist
+PsyCare-Frontend/dist-ssr
+PsyCare-Frontend/*.local
+
+# Editor directories and files
+PsyCare-Frontend/.vscode/*
+PsyCare-Frontend/!.vscode/extensions.json
+PsyCare-Frontend/.idea
+PsyCare-Frontend/.DS_Store
+PsyCare-Frontend/*.suo
+PsyCare-Frontend/*.ntvs*
+PsyCare-Frontend/*.njsproj
+PsyCare-Frontend/*.sln
+PsyCare-Frontend/*.sw?
+
+# backend
+
+
+# Node modules
+Psycare-backend/node_modules/
+Psycare-backend/.env
+
+
+# Logs
+Psycare-backend/logs/
+Psycare-backend/*.log
+Psycare-backend/npm-debug.log*
+Psycare-backend/yarn-debug.log*
+Psycare-backend/yarn-error.log*
+
+# OS files
+Psycare-backend/.DS_Store
+
+# Optional: coverage reports
+Psycare-backend/coverage/
+
+# Optional: production build
+Psycare-backend//dist
+
+# Optional: local env files
+Psycare-backend/.env.*.local

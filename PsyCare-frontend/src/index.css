@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* PsyCare Design System - Soft, encouraging mental health theme */
+
+@layer base {
+  :root {
+    /* Soft, soothing color palette */
+    --background: 240 25% 98%;
+    --foreground: 240 15% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 15% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 15% 15%;
+
+    /* Primary: Soft purple for mental wellness */
+    --primary: 260 55% 65%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 260 40% 85%;
+
+    /* Secondary: Calming blue */
+    --secondary: 210 60% 75%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-soft: 210 40% 90%;
+
+    /* Accent: Encouraging green */
+    --accent: 150 50% 70%;
+    --accent-foreground: 0 0% 100%;
+    --accent-soft: 150 35% 90%;
+
+    /* Tertiary: Warm coral for energy */
+    --tertiary: 15 85% 75%;
+    --tertiary-foreground: 0 0% 100%;
+    --tertiary-soft: 15 60% 90%;
+
+    --muted: 240 15% 95%;
+    --muted-foreground: 240 10% 50%;
+
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 15% 88%;
+    --input: 240 15% 88%;
+    --ring: 260 55% 65%;
+
+    --radius: 0.75rem;
+
+    /* Gradients for mental wellness theme */
+    --gradient-primary: linear-gradient(135deg, hsl(260 55% 65%), hsl(280 50% 70%));
+    --gradient-secondary: linear-gradient(135deg, hsl(210 60% 75%), hsl(190 55% 80%));
+    --gradient-accent: linear-gradient(135deg, hsl(150 50% 70%), hsl(170 45% 75%));
+    --gradient-warm: linear-gradient(135deg, hsl(15 85% 75%), hsl(35 80% 80%));
+    --gradient-hero: linear-gradient(135deg, hsl(260 40% 85%), hsl(210 40% 90%), hsl(150 35% 90%));
+    
+    /* Shadows with color tints */
+    --shadow-soft: 0 4px 20px hsl(260 20% 70% / 0.15);
+    --shadow-medium: 0 8px 30px hsl(260 20% 60% / 0.2);
+    --shadow-glow: 0 0 30px hsl(260 55% 65% / 0.3);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Dark mode with softer, warmer tones */
+    --background: 240 20% 8%;
+    --foreground: 240 10% 95%;
+
+    --card: 240 15% 12%;
+    --card-foreground: 240 10% 95%;
+
+    --popover: 240 15% 12%;
+    --popover-foreground: 240 10% 95%;
+
+    --primary: 260 50% 70%;
+    --primary-foreground: 240 20% 8%;
+    --primary-soft: 260 30% 25%;
+
+    --secondary: 210 50% 65%;
+    --secondary-foreground: 240 20% 8%;
+    --secondary-soft: 210 30% 20%;
+
+    --accent: 150 40% 60%;
+    --accent-foreground: 240 20% 8%;
+    --accent-soft: 150 25% 20%;
+
+    --tertiary: 15 70% 65%;
+    --tertiary-foreground: 240 20% 8%;
+    --tertiary-soft: 15 40% 20%;
+
+    --muted: 240 15% 15%;
+    --muted-foreground: 240 10% 65%;
+
+    --destructive: 0 60% 55%;
+    --destructive-foreground: 240 10% 95%;
+
+    --border: 240 15% 20%;
+    --input: 240 15% 20%;
+    --ring: 260 50% 70%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-poppins;
+  }
+}
