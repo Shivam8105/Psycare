@@ -63,14 +63,6 @@ const resources = [
     icon: <FaVideo className="text-purple-500 text-2xl" />,
   },
   {
-    title: "Crisis Support",
-    tag: "Emergency",
-    rating: 5.0,
-    description: "Immediate help resources and emergency contact information",
-    details: "24/7 support",
-    icon: <FaPhoneAlt className="text-red-500 text-2xl" />,
-  },
-  {
     title: "Interactive Games",
     tag: "Fun",
     rating: 4.6,

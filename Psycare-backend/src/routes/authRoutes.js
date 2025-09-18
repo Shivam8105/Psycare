@@ -26,7 +26,7 @@ router.get('/google/callback', passport.authenticate('google', { session: false,
 		{ expiresIn: '1h' }
 	);
 	// Redirect to frontend with user info in query params
-	const redirectUrl = `http://localhost:5001/?token=${token}` +
+	const redirectUrl = `http://localhost:5000/?token=${token}` +
 		`&avatar=${encodeURIComponent(user.avatar)}` +
 		`&funnyName=${encodeURIComponent(user.funnyName)}` +
 		`&name=${encodeURIComponent(user.name)}` +

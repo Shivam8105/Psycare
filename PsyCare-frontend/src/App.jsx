@@ -51,6 +51,7 @@ const App = () => {
               <Route path="/appointments" element={<AppointmentsSection />} />
               <Route path="/book" element={<BookingSection />} />
               <Route path="/resources" element={<WellnessResources />} />
+              <Route path="/api/tests/:testId/questions" element={<TestPage />} />
               <Route path="/community" element={<CommunitySection />} />
               <Route path="/ai-chat" element={<Ai_chat />} />
               <Route path="/tests" element={<Tests />} />

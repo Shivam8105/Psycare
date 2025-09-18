@@ -6,9 +6,8 @@ const Tests = () => {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState({});
-  const [showModal, setShowModal] = useState(false);
-  const [selectedTestId, setSelectedTestId] = useState(null);
 
+  // read auth from localStorage
   const userId = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user")).id
     : null;
@@ -17,6 +16,7 @@ const Tests = () => {
   useEffect(() => {
     if (!token) return;
 
+    // fetch tests
     axios
       .get("http://localhost:8080/api/tests", {
         headers: { Authorization: `Bearer ${token}` },
@@ -25,6 +25,7 @@ const Tests = () => {
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
 
+    // fetch all reports for user
     if (userId) {
       axios
         .get(`http://localhost:8080/api/tests/user/${userId}/allreport`, {
@@ -55,57 +56,79 @@ const Tests = () => {
   }
 
   return (
-  <div className="min-h-screen flex flex-col items-center py-16 px-4 bg-gradient-to-br from-purple-100 via-blue-100 to-pink-100">
-
-      <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 text-center tracking-tight">
+    <div className="min-h-screen bg-gradient-to-b from-violet-200 via-purple-50 to-blue-100 flex flex-col items-center py-16 px-4">
+      {/* Header */}
+      <h2 className="text-4xl font-bold text-gray-900 mb-3 text-center font-serif">
         Wellness & Mental Health Tests
       </h2>
-      <p className="text-center text-gray-700 mb-12 max-w-2xl text-base md:text-lg">
-        Choose a test to explore different aspects of your mental well-being.
+      <p className="text-center text-gray-600 mb-12 max-w-2xl text-base md:text-lg leading-relaxed">
+        Take a quick self-assessment to understand your mental wellness better.  
+        Each card represents a different aspect of your well-being.
       </p>
 
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl z-10">
+      {/* Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl">
         {tests.length === 0 && (
           <p className="text-center text-gray-700 col-span-full">
             No tests available.
           </p>
         )}
 
-      {tests.map((test) => {
-        const lastReport =
-          reports[test._id]?.[0]?.scores?.slice(-1)[0] || null;
+        {tests.map((test, idx) => {
+          // get last score if available
+          const scoresArr = reports[test._id]?.[0]?.scores || [];
+          const lastScore =
+            Array.isArray(scoresArr) && scoresArr.length > 0
+              ? scoresArr[scoresArr.length - 1]
+              : null;
 
-        return (
-          <div
-            key={test._id}
-            className="flex flex-col justify-between bg-white border border-purple-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition duration-200 group min-h-[210px]"
-          >
-            <div className="flex-1 flex flex-col justify-between">
-              <h3 className="text-xl font-bold mb-2 text-gray-900 group-hover:text-purple-700">
-                {test.test_name}
-              </h3>
-              <p className="text-sm text-gray-700 opacity-90 mb-2">
-                {test.description}
-              </p>
-              {lastReport !== null && (
-                <p className="mt-2 text-sm text-gray-800">
-                  Last Score: <span className="font-semibold text-purple-700">{lastReport}</span>
-                </p>
-              )}
+          // try to split emoji from name if your API returns emoji in name
+          const match = test.test_name.match(/(.)\s(.[\u{1F300}-\u{1FAFF}].)$/u);
+          const name = match ? match[1] : test.test_name;
+          const emoji = match ? match[2] : "🔖";
+
+          return (
+            <div
+              key={test._id}
+              className="
+                bg-white/80 backdrop-blur-md rounded-3xl border border-violet-100 
+                p-6 shadow-md hover:shadow-xl hover:-translate-y-1 
+                transition-all duration-300 flex flex-col justify-between
+              "
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-violet-300 to-purple-400 flex items-center justify-center text-xl">
+                  {emoji}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{name}</h3>
+                  <p className="text-sm text-gray-600">{test.description}</p>
+                  {lastScore !== null && (
+                    <p className="mt-1 text-xs text-gray-800">
+                      Last Score:{" "}
+                      <span className="font-semibold text-purple-700">{lastScore}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+                    <div className="mt-5">
+                      <Link
+                        to={`/api/tests/${test._id}/questions`}
+                  className="
+                    inline-block w-full text-center px-4 py-2 rounded-lg 
+                    bg-gradient-to-r from-purple-500 to-blue-500
+                    text-white font-medium text-sm 
+                    hover:from-violet-500 hover:to-violet-600 shadow transition
+                  "
+                >
+                  Start the Test
+                </Link>
+              </div>
             </div>
-            <div className="mt-5">
-              <Link
-                to={`/tests/${test._id}`}
-                className="block w-full text-center bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition text-sm"
-              >
-                Start the Test
-              </Link>
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
-  </div>
   );
 };
 

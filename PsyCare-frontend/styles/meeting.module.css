@@ -1,0 +1,450 @@
+.mainWrapper {
+  position: relative;
+  width: 100%;
+  height: 91vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #ebe1fc 0%, #dbf0ff 100%);
+  background-size: 200% 200%;
+  animation: moveGradient 15s ease infinite;
+}
+
+/* Styles for the Lobby Form (the central card) */
+.lobbyFormContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 60px;
+  background: #fff;
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
+  box-shadow: 0 8px 30px rgba(110, 193, 255, 0.13);
+  border: 1px solid rgba(166, 130, 227, 0.2);
+  animation: fadeIn 0.8s ease-in-out;
+  width: 450px;
+  box-sizing: border-box;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.lobbyFormContainer:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(166, 130, 227, 0.14), 0 8px 25px rgba(110, 193, 255, 0.13);
+}
+
+/* Stylish heading for the lobby page */
+.lobbyHeading {
+  color: #674ba2;
+  font-weight: bold;
+  font-size: 2.2rem;
+  text-shadow: 2px 2px 6px rgba(103, 75, 162, 0.1);
+}
+
+/* Container for the camera and mic icons in the lobby */
+.lobbyControls {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* Lobby control buttons styling */
+.lobbyControlButton {
+  background-color: #f7f6ff !important;
+  border: 2px solid #a682e3 !important;
+  transition: all 0.3s ease !important;
+}
+
+.lobbyControlButton:hover {
+  background-color: #ede7fa !important;
+  border-color: #67c7fc !important;
+}
+
+/* Make the icons bigger and with proper colors */
+.lobbyControls svg {
+  font-size: 35px !important;
+  color: #a682e3 !important;
+}
+
+/* Wrapper for the video stream or the avatar fallback */
+.videoStreamContainer {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  height: 285px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 15px rgba(110, 193, 255, 0.13);
+  border: 2px solid #a682e3;
+}
+
+/* Styles for the live video player */
+.videoPlayer {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Styles for the fallback avatar screen (when camera is off) */
+.videoPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: #f7f6ff;
+  color: #54575b;
+}
+
+.avatar {
+  font-size: 80px !important;
+  color: #abacbc;
+  margin-bottom: 15px;
+}
+
+/* Styles for the "Camera is off" text */
+.videoPlaceholder p {
+  font-size: 1.1rem;
+  color: #54575b;
+}
+
+/* Styling for the Connect button */
+.connectButton {
+  background-color: #a682e3 !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 12px 30px !important;
+  border-radius: 8px !important;
+  margin-top: 10px !important;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: 100%;
+}
+
+.connectButton:hover {
+  background-color: #674ba2 !important;
+  transform: translateY(-2px);
+}
+
+/* Keyframes for background animation */
+@keyframes moveGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Keyframes for the lobby form fade-in */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.meetVideoContainer {
+  position: relative;
+  height: 91vh;
+  width: 100vw;
+  background: linear-gradient(135deg, #ebe1fc 0%, #dbf0ff 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.meetUserVideo {
+  position: absolute;
+  bottom: 100px;
+  left: 20px;
+  width: 250px;
+  height: 150px;
+  border-radius: 12px;
+  border: 2px solid #a682e3;
+  box-shadow: 0 4px 15px rgba(110, 193, 255, 0.13);
+  z-index: 10;
+}
+
+.videoPlaceholderInMeet {
+  position: absolute;
+  bottom: 100px;
+  left: 20px;
+  width: 250px;
+  height: 150px;
+  border-radius: 12px;
+  border: 2px solid #a682e3;
+  box-shadow: 0 4px 15px rgba(110, 193, 255, 0.13);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  color: #54575b;
+  box-sizing: border-box;
+}
+
+/* Reusing the avatar and text styles */
+.videoPlaceholderInMeet .avatar {
+  font-size: 60px !important;
+  color: #abacbc;
+  margin-bottom: 8px;
+}
+
+.videoPlaceholderInMeet p {
+  font-size: 0.9rem;
+  color: #54575b;
+  text-align: center;
+  margin: 0;
+}
+
+/* Control button container */
+.btnContainer {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  padding: 12px 20px;
+  background-color: #fff;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(166, 130, 227, 0.14);
+  border: 1px solid rgba(166, 130, 227, 0.2);
+  z-index: 20;
+}
+
+/* Control button styling */
+.controlButton {
+  background-color: #f7f6ff !important;
+  color: #a682e3 !important;
+  border: 2px solid #a682e3 !important;
+  transition: all 0.3s ease !important;
+}
+
+.controlButton:hover {
+  background-color: #ede7fa !important;
+  color: #674ba2 !important;
+  border-color: #67c7fc !important;
+}
+
+/* End call button specific styling */
+.endCallButton {
+  background-color: #e74343 !important;
+  color: white !important;
+  border: 2px solid #e74343 !important;
+  transition: all 0.3s ease !important;
+}
+
+.endCallButton:hover {
+  background-color: #d32f2f !important;
+  border-color: #d32f2f !important;
+}
+
+.btnContainer svg {
+  font-size: 28px;
+}
+
+.conferenceView {
+  display: grid;
+  width: 100%;
+  height: calc(100vh - 160px);
+  padding: 20px;
+  padding-left: 280px;
+  gap: 15px;
+  box-sizing: border-box;
+  justify-content: center;
+  align-content: center;
+  overflow: hidden;
+}
+
+.conferenceView.one {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: calc(100% - 280px);
+  padding-left: 300px;
+}
+
+.conferenceView.two {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.conferenceView.three {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.conferenceView.four {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.conferenceView.many {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-auto-rows: minmax(200px, 1fr);
+  justify-content: center;
+}
+
+/* Video cell styles for spacing and aspect ratio */
+.videoCell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #a682e3;
+  box-shadow: 0 4px 15px rgba(110, 193, 255, 0.13);
+  min-height: 180px;
+  max-height: 300px;
+  position: relative;
+}
+
+.videoCell video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Chat Room styles */
+.chatRoom {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 450px;
+  height: 100%;
+  background-color: #fff;
+  backdrop-filter: blur(8px);
+  padding: 20px;
+  box-sizing: border-box;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  border-left: 2px solid #a682e3;
+  box-shadow: -4px 0 15px rgba(166, 130, 227, 0.14);
+  transform: translateX(450px);
+  transition: transform 0.3s ease-in-out;
+}
+
+.chatRoom.show {
+  transform: translateX(0);
+}
+
+.chatContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.chatHeaderRow {
+  display: flex;
+  align-items: center;           /* vertical centering */
+  justify-content: center;       /* horizontal centering for whole row */
+  position: relative;
+  min-height: 48px;
+}
+
+/* Cross button at left edge */
+.closeButton {
+  margin-right: auto;            /* pushes remaining content to center/right */
+  background: transparent;
+  border: none;
+  color: #a682e3;
+  font-size: 28px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  z-index: 1;
+}
+
+/* Center heading, keep it at center regardless of cross icon */
+.chatHeader {
+  margin: 0 auto;                /* center horizontally in flex row */
+  font-size: 2rem;
+  font-weight: bold;
+  color: #674ba2;
+  text-align: center;
+}
+
+
+.chattingDisplay {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  padding-right: 10px;
+  background-color: #f7f6ff;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+
+.chattingDisplay::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chattingDisplay::-webkit-scrollbar-thumb {
+  background-color: #c9bdf3;
+  border-radius: 4px;
+}
+
+.chattingDisplay::-webkit-scrollbar-track {
+  background-color: #f7f6ff;
+}
+
+.message {
+  margin-bottom: 15px;
+}
+
+.messageSender {
+  font-weight: bold;
+  color: #a682e3;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+.messageText {
+  color: #303156;
+  word-wrap: break-word;
+}
+
+.noMessages {
+  color: #abacbc;
+  text-align: center;
+  margin-top: 50px;
+  font-style: italic;
+}
+
+.chattingArea {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.chattingArea .MuiFormControl-root {
+  flex: 1;
+}
+
+.sendButton {
+  background-color: #67c7fc !important;
+  color: white !important;
+  padding: 12px 24px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  transition: background-color 0.3s ease !important;
+}
+
+.sendButton:hover {
+  background-color: #5bb5e8 !important;
+}

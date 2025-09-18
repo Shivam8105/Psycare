@@ -25,7 +25,9 @@ const Navigation = () => {
   console.log("Navbar user context:", user);
 
   const navItems = [
-    { to: "/", label: "Home", icon: Brain },
+    user
+    ? { to: "/dashboard", label: "Dashboard", icon: Brain }
+    : { to: "/", label: "Home", icon: Brain },
     { to: "/ai-chat", label: "AI Chat", icon: MessageCircle },
     { to: "/book", label: "Book", icon: Calendar },
     { to: "/resources", label: "Resources", icon: BookOpen },

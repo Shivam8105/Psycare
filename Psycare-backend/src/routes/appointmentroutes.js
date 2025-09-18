@@ -1,9 +1,9 @@
 import express from "express";
 import Appointment from "../models/Appointments.js";
-import authMiddleware from "../middlewares/authMiddleware.js";
+import authMiddleware from "../middlewares/authmiddleware.js";
+import { nanoid } from "nanoid";
 
 const router = express.Router();
-
 
 // ✅ 1. Student books appointment (with conflict check)
 router.post("/", authMiddleware, async (req, res) => {
@@ -35,12 +35,15 @@ router.post("/", authMiddleware, async (req, res) => {
     });
     if (studentConflict) return res.status(400).json({ error: "You already have an appointment in this slot" });
 
+    const meetingCode = nanoid(6).toUpperCase();
+
     const appointment = await Appointment.create({
       studentId: req.user.id,
       psychologistId,
       appointmentTime: startTime,
       duration: duration || 30,
-      status: "pending"
+      status: "pending",
+      meetingCode
     });
 
     // ✅ 2. Notification placeholder (e.g. email)
