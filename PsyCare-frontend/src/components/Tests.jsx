@@ -1,77 +1,111 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-const tests = [
-  {
-    title: "Perceived Stress Scale (PSS-10) 🧠",
-    description: "Measures perceived stress over the past month.",
-  },
-  {
-    title: "Insomnia Severity Index (ISI) 😴",
-    description: "Assesses the severity of insomnia over the past 2 weeks.",
-  },
-  {
-    title: "Generalized Anxiety Disorder (GAD-7) 😟",
-    description: "Measures the severity of anxiety over the past 2 weeks.",
-  },
-  {
-    title: "Patient Health Questionnaire (PHQ-9) 📉",
-    description: "Screens for depression severity over the past 2 weeks.",
-  },
-  {
-    title: "Rosenberg Self-Esteem Scale 😊",
-    description: "Checks confidence and self-worth.",
-  },
-  {
-    title: "Brief Resilience Scale (BRS) 💪",
-    description: "Identifies how users handle stress and bounce back from adversity.",
-  },
-  {
-    title: "Burnout Assessment 🔥",
-    description: "Measures emotional exhaustion and cynicism related to work or study.",
-  },
-  {
-    title: "Lifestyle & Habits 🌿",
-    description: "Assesses general wellness habits, including diet, exercise, and mindfulness.",
-  },
-  {
-    title: "Social & Relationship Wellness 💬",
-    description: "Assesses satisfaction and well-being in personal relationships.",
-  },
-];
+import axios from "axios";
 
 const Tests = () => {
+  const [tests, setTests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [reports, setReports] = useState({});
+  const [showModal, setShowModal] = useState(false);
+  const [selectedTestId, setSelectedTestId] = useState(null);
+
+  const userId = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user")).id
+    : null;
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    if (!token) return;
+
+    axios
+      .get("http://localhost:8080/api/tests", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setTests(res.data))
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
+
+    if (userId) {
+      axios
+        .get(`http://localhost:8080/api/tests/user/${userId}/allreport`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          const progressMap = {};
+          if (res.data.reports) {
+            res.data.reports.forEach((report) => {
+              for (const [testId, scores] of Object.entries(report.progress)) {
+                if (!progressMap[testId]) progressMap[testId] = [];
+                progressMap[testId].push({ date: report.last_updated, scores });
+              }
+            });
+          }
+          setReports(progressMap);
+        })
+        .catch((err) => console.error(err));
+    }
+  }, [token, userId]);
+
+  if (loading) {
+    return (
+      <p className="text-center mt-10 text-purple-700">
+        Loading tests...
+      </p>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-purple-100 to-blue-100 flex flex-col items-center py-16 px-4">
-      <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 text-center font-poppins">
+  <div className="min-h-screen flex flex-col items-center py-16 px-4 bg-gradient-to-br from-purple-100 via-blue-100 to-pink-100">
+
+      <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 text-center tracking-tight">
         Wellness & Mental Health Tests
       </h2>
-      <p className="text-center text-gray-700 mb-10 max-w-2xl text-sm md:text-base">
-        Choose a test to assess your mental wellness. Each card represents a different aspect of your well-being. Start any test by clicking the button below.
+      <p className="text-center text-gray-700 mb-12 max-w-2xl text-base md:text-lg">
+        Choose a test to explore different aspects of your mental well-being.
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl">
-        {tests.map((test, idx) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl z-10">
+        {tests.length === 0 && (
+          <p className="text-center text-gray-700 col-span-full">
+            No tests available.
+          </p>
+        )}
+
+      {tests.map((test) => {
+        const lastReport =
+          reports[test._id]?.[0]?.scores?.slice(-1)[0] || null;
+
+        return (
           <div
-            key={idx}
-            className="bg-gradient-primary text-white p-5 rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between"
+            key={test._id}
+            className="flex flex-col justify-between bg-white border border-purple-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition duration-200 group min-h-[210px]"
           >
-            <div>
-              <h3 className="text-lg font-bold mb-1">{test.title}</h3>
-              <p className="text-xs md:text-sm opacity-90">{test.description}</p>
+            <div className="flex-1 flex flex-col justify-between">
+              <h3 className="text-xl font-bold mb-2 text-gray-900 group-hover:text-purple-700">
+                {test.test_name}
+              </h3>
+              <p className="text-sm text-gray-700 opacity-90 mb-2">
+                {test.description}
+              </p>
+              {lastReport !== null && (
+                <p className="mt-2 text-sm text-gray-800">
+                  Last Score: <span className="font-semibold text-purple-700">{lastReport}</span>
+                </p>
+              )}
             </div>
-            <div className="mt-3">
+            <div className="mt-5">
               <Link
-                to={`/test/${idx}`}
-                className="block text-center bg-white text-purple-600 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100 transition text-sm"
+                to={`/tests/${test._id}`}
+                className="block w-full text-center bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition text-sm"
               >
                 Start the Test
               </Link>
             </div>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
+  </div>
   );
 };
 

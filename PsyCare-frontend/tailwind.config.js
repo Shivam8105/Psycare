@@ -12,6 +12,18 @@ export default {
     },
     extend: {
       colors: {
+        psycarePurple: {
+          50: "#f5e9ff",
+          100: "#ebd6ff",
+          200: "#d5adff",
+          300: "#bf85ff",
+          400: "#a85cff",
+          500: "#9333ea", // main shade
+          600: "#7a28c7",
+          700: "#611fa3",
+          800: "#491680",
+          900: "#310c5c",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

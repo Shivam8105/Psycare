@@ -20,7 +20,9 @@ export default function CounselorBooking() {
   };
 
   const getToken = () => {
-    return localStorage.getItem("token");
+    const t = localStorage.getItem("token");
+    if (!t || t === "null" || t === "undefined") return null;
+    return t;
   };
 
   const user = getStoredUser();
@@ -29,12 +31,15 @@ export default function CounselorBooking() {
   // Fetch psychologists from backend
   useEffect(() => {
     const fetchPsychologists = async () => {
+      if (!token) {
+        alert("You must be logged in to view psychologists.");
+        return;
+      }
       try {
         const res = await fetch("http://localhost:8080/api/users?role=psychologist", {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-
         setPsychologists(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Error fetching psychologists:", err);

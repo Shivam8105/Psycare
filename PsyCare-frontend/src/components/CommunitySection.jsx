@@ -3,12 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { FaUserCircle, FaHeart, FaComment, FaShareAlt } from "react-icons/fa";
 import { FiShield } from "react-icons/fi";
 import axios from "axios";
+import { toast } from "@/components/ui/sonner";
 
 export default function CommunityForum() {
+  const [posts, setPosts] = useState([]);
+  // Pagination state
+  const POSTS_PER_PAGE = 4;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE);
+  const paginatedPosts = posts.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-
-  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -56,7 +61,17 @@ export default function CommunityForum() {
       setNewContent("");
     } catch (err) {
       console.error(err);
-      if (err.response?.status === 400) alert(err.response.data.message);
+      if (err.response?.status === 403) {
+        toast.error("Sorry, you cannot post threatening messages.", {
+          description: "Your post was blocked for safety reasons. Please avoid harmful or threatening language.",
+          duration: 5000,
+          style: { background: "#f8e1e1", color: "#a94442", border: "1px solid #e57373", fontWeight: "bold" }
+        });
+      } else if (err.response?.status === 400) {
+        toast.error(err.response.data.message, {
+          duration: 4000,
+        });
+      }
     }
   };
 
@@ -182,9 +197,10 @@ export default function CommunityForum() {
               </button>
             </div>
 
-            {/* Existing Posts */}
-            {posts.map((post) => (
+            {/* Existing Posts with Pagination */}
+            {paginatedPosts.map((post) => (
               <div key={post._id} className="bg-white rounded-2xl shadow p-6 space-y-2">
+                {/* ...existing post rendering code... */}
                 {/* User info */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -271,6 +287,25 @@ export default function CommunityForum() {
                 )}
               </div>
             ))}
+
+            {/* Pagination Controls */}
+            <div className="flex justify-center gap-4 mt-6">
+              <button
+                className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                Previous
+              </button>
+              <span className="px-4 py-2 text-gray-700">Page {page} of {totalPages}</span>
+              <button
+                className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                Next
+              </button>
+            </div>
           </div>
 
           {/* Sidebar */}

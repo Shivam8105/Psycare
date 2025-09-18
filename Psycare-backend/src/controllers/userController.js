@@ -3,11 +3,11 @@ import User from '../models/User.js';
 export const updateUserProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { funnyName, avatar } = req.body;
+  const { funnyName, avatar, mobile } = req.body;
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { funnyName, avatar },
+      { funnyName, avatar, mobile },
       { new: true }
     );
 
@@ -21,7 +21,8 @@ export const updateUserProfile = async (req, res) => {
         email: user.email,
         role: user.role,
         avatar: user.avatar,
-        funnyName: user.funnyName
+  funnyName: user.funnyName,
+  mobile: user.mobile
       }
     });
   } catch (err) {

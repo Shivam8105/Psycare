@@ -23,6 +23,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { toast } from "@/components/ui/sonner";
 
 const DashboardSection = () => {
   const moodOptions = [
@@ -33,13 +34,6 @@ const DashboardSection = () => {
     { emoji: "😢", label: "Sad", color: "bg-destructive" },
   ];
 
-  const recentActivities = [
-    { time: "2 hours ago", activity: "Completed breathing exercise", icon: Zap, color: "text-accent" },
-    { time: "1 day ago", activity: "Chat session with AI counselor", icon: Target, color: "text-primary" },
-    { time: "3 days ago", activity: "Joined community discussion", icon: Clock, color: "text-secondary" },
-  ];
-
-  // ---------- State ----------
   const [moodPattern, setMoodPattern] = useState(["😊", "🙂", "😊", "😐", "🙂", "😊", "😊"]);
   const [wellnessScore, setWellnessScore] = useState(78);
   const [dayStreak, setDayStreak] = useState(7);
@@ -47,6 +41,12 @@ const DashboardSection = () => {
   // modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(null);
+
+  const [recentActivities, setRecentActivities] = useState([
+    { time: "2 hours ago", activity: "Completed breathing exercise", icon: Zap, color: "text-accent" },
+    { time: "1 day ago", activity: "Chat session with AI counselor", icon: Target, color: "text-primary" },
+    { time: "3 days ago", activity: "Joined community discussion", icon: Clock, color: "text-secondary" },
+  ]);
 
   const handleMoodSelect = (moodEmoji, label) => {
     // add new mood at the end and drop oldest
@@ -83,6 +83,20 @@ const DashboardSection = () => {
       });
       setModalOpen(true);
     }
+  };
+
+  // Daily Wellness handler
+  const handleDailyWellness = () => {
+    setDayStreak((prev) => prev + 1);
+    setWellnessScore((prev) => prev + 2);
+    setRecentActivities((prev) => [
+      { time: "Just now", activity: "Completed Daily Wellness", icon: Smile, color: "text-primary" },
+      ...prev
+    ]);
+    toast.success("Daily Wellness completed!", {
+      description: "Your streak and wellness score have been updated.",
+      duration: 4000,
+    });
   };
 
   return (
@@ -216,10 +230,13 @@ const DashboardSection = () => {
             <CardContent className="space-y-3">
               <Button className="w-full justify-start bg-gradient-primary hover:shadow-soft"
                onClick={() => navigate("/ai-chat")} >
-                <MessageCircle className="w-4 h-4 mr-2" 
-                
-                />
+                <MessageCircle className="w-4 h-4 mr-2" />
                 Start AI Chat Session
+              </Button>
+              <Button variant="outline" className="w-full justify-start hover:bg-green-50 text-green-700 font-semibold"
+                onClick={handleDailyWellness}>
+                <Smile className="w-4 h-4 mr-2" />
+                Daily Wellness
               </Button>
               <Button variant="outline" className="w-full justify-start hover:bg-secondary/5">
                 <Target className="w-4 h-4 mr-2" />

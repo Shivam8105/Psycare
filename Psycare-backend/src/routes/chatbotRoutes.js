@@ -5,11 +5,11 @@ import dns from "dns";
 import * as chrono from "chrono-node";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import translate from "google-translate-api-x";  // ✅ Translation API
-
 import Appointment from "../models/Appointments.js";
 import Conversation from "../models/Conversation.js";
 import User from "../models/User.js";
-import authMiddleware from "../middlewares/authmiddleware.js";
+import authMiddleware from "../middlewares/authMiddleware.js";
+import { sendSOSMail } from "../utils/sosMailer.js";
 
 dns.setDefaultResultOrder("ipv4first");
 dotenv.config();
@@ -58,6 +58,8 @@ const SUICIDAL_PATTERNS = [
   /\bi\s+wish\s+i\s+was\s+dead\b/,
   /\bi\s+want\s+to\s+end\s+it\b/,
   /\bwant\s+to\s+die\b/,
+  /\bcommit\s+suicide\b/,
+  /\bi\s+want\s+to\s+commit\s+suicide\b/,
 ];
 
 function containsSuicidalKeywords(rawText) {
@@ -80,6 +82,10 @@ async function confirmSuicidalWithModel(userMessage) {
     const text = result.response.text().toLowerCase();
     return text.includes("suicidal") || text.includes("yes") || text.includes("suicide");
   } catch (err) {
+    if (err.status === 503) {
+      console.warn("Gemini model overloaded, using keyword fallback.");
+      return "fallback";
+    }
     console.error("confirmSuicidalWithModel error:", err);
     return false; // fallback
   }
@@ -122,7 +128,7 @@ async function translateTextIfNeeded(text, lang) {
 
 // ---------------- Chat Endpoint ----------------
 router.post("/chat", authMiddleware, async (req, res) => {
-  const { message, lang } = req.body;
+  const { message, lang, location } = req.body;
   const userId = req.user?.id || req.user?._id;
 
   if (!message) return res.status(400).json({ error: "Message is required" });
@@ -163,8 +169,19 @@ router.post("/chat", authMiddleware, async (req, res) => {
 
     // Step 2: Suicide detection
     let suicidalDetected = containsSuicidalKeywords(message);
+    let modelResult = suicidalDetected;
     if (suicidalDetected && process.env.CONFIRM_WITH_MODEL === "true") {
-      suicidalDetected = await confirmSuicidalWithModel(message);
+      modelResult = await confirmSuicidalWithModel(message);
+      if (modelResult === "fallback") {
+        // Model overloaded, fallback to keyword detection and notify frontend
+        return res.json({
+          escalate: true,
+          emergencyMessage: EMERGENCY_REPLY + "\n\nAI service is busy, using basic detection.",
+          hotlines: HOTLINES,
+          therapists: (await User.find({ role: "psychologist" }).select("_id name email").lean()).map((t) => ({ id: t._id, name: t.name, email: t.email })),
+        });
+      }
+      suicidalDetected = modelResult;
     }
 
     if (suicidalDetected) {
@@ -177,15 +194,38 @@ router.post("/chat", authMiddleware, async (req, res) => {
       });
       await escalationConvo.save();
 
-      const therapists = await User.find({ role: "psychologist" }).select("_id name email").lean();
+      // Fetch user details for SOS mail
+      const user = await User.findById(userId).lean();
+      let userName = user?.name || "Unknown";
+      let userEmail = user?.email || "Unknown";
+      let userMobile = (user && user.mobile) ? user.mobile : (user?.mobile || "Unknown");
 
+      // Debug: log received location
+      console.log("[SOSMailer] Received location from frontend:", location);
+
+      // Send SOS mail, handle errors
+      let sosMailStatus = false;
+      try {
+        sosMailStatus = await sendSOSMail({
+          name: userName,
+          email: userEmail,
+          mobile: userMobile,
+          location,
+          message,
+        });
+      } catch (mailErr) {
+        console.error("[SOSMailer] Error sending SOS mail:", mailErr);
+      }
+
+      const therapists = await User.find({ role: "psychologist" }).select("_id name email").lean();
       let emergencyTranslated = await translateTextIfNeeded(EMERGENCY_REPLY, lang);
 
       return res.json({
         escalate: true,
         emergencyMessage: emergencyTranslated,
-        hotlines: HOTLINES, // You can also translate names if you want
+        hotlines: HOTLINES,
         therapists: therapists.map((t) => ({ id: t._id, name: t.name, email: t.email })),
+        sosMailSent: !!sosMailStatus,
       });
     }
 
@@ -196,26 +236,36 @@ router.post("/chat", authMiddleware, async (req, res) => {
       { role: "model", parts: [{ text: c.response }] },
     ]);
 
-    const chat = model.startChat({
-      history,
-      context:
-        "You are PsyCare, an empathetic mental health chatbot for students. Respond with compassion, suggest relaxation tips, and guide them to tests if needed. Escalate to human therapists if suicidal intent is detected.",
-    });
+    try {
+      const chat = model.startChat({
+        history,
+        context:
+          "You are PsyCare, an empathetic mental health chatbot for students. Respond with compassion, suggest relaxation tips, and guide them to tests if needed. Escalate to human therapists if suicidal intent is detected.",
+      });
 
-    const result = await chat.sendMessage(message);
-    let reply = result.response.text();
+      const result = await chat.sendMessage(message);
+      let reply = result.response.text();
 
-    // Translate reply if needed
-    reply = await translateTextIfNeeded(reply, lang);
+      // Translate reply if needed
+      reply = await translateTextIfNeeded(reply, lang);
 
-    const convo = new Conversation({ user_id: userId, message, response: reply });
-    await convo.save();
+      const convo = new Conversation({ user_id: userId, message, response: reply });
+      await convo.save();
 
-    return res.json({ reply });
+      return res.json({ reply });
+    } catch (err) {
+      if (err.status === 503) {
+        // Gemini model overloaded, fallback response
+        return res.json({ reply: "AI service is busy, please try again later. You can still use basic features or talk to a human therapist." });
+      }
+      console.error("Chatbot Error:", err);
+      return res.status(500).json({ error: "AI Chatbot error" });
+    }
   } catch (err) {
     console.error("Chatbot Error:", err);
     return res.status(500).json({ error: "AI Chatbot error" });
   }
 });
+
 
 export default router;

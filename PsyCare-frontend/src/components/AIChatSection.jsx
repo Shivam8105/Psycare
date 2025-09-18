@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { Bot, Send, Globe } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,9 @@ const AIChatSection = () => {
   const [messages, setMessages] = useState([
     { sender: "bot", text: "Hi 👋, I'm PsyCare. How are you feeling today?" },
   ]);
+  const [locationConsent, setLocationConsent] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [showLocationPopup, setShowLocationPopup] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -23,6 +27,12 @@ const AIChatSection = () => {
     setInput("");
     setLoading(true);
 
+    // If location consent not given, send message first, then handle SOS after consent
+  let location = null;
+  let escalateDetected = false;
+  let emergencyMessage = "";
+  let hotlines = [];
+  let therapists = [];
     try {
       const response = await fetch("http://localhost:8080/api/chat", {
         method: "POST",
@@ -35,24 +45,43 @@ const AIChatSection = () => {
       });
 
       if (response.status === 401) {
-        setShowLoginPrompt(true);
+        // Only show login prompt if token is truly missing or expired
+        if (!token) {
+          setShowLoginPrompt(true);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            { sender: "bot", text: "Session expired or invalid. Please log in again." },
+          ]);
+        }
         setLoading(false);
         return;
       }
 
-      if (!response.ok)
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      if (!response.ok) {
+        setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: `Error: ${response.statusText}` },
+        ]);
+        setLoading(false);
+        return;
+      }
 
       const data = await response.json();
 
       // ✅ Suicidal / emergency handling
       if (data.escalate) {
+        escalateDetected = true;
+        emergencyMessage = data.emergencyMessage;
+        hotlines = data.hotlines || [];
+        therapists = data.therapists || [];
+
         setMessages((prev) => [
           ...prev,
-          { sender: "bot", text: data.emergencyMessage },
+          { sender: "bot", text: emergencyMessage },
         ]);
 
-        data.hotlines?.forEach((h) => {
+        hotlines.forEach((h) => {
           setMessages((prev) => [
             ...prev,
             {
@@ -62,7 +91,7 @@ const AIChatSection = () => {
           ]);
         });
 
-        data.therapists?.forEach((t) => {
+        therapists.forEach((t) => {
           setMessages((prev) => [
             ...prev,
             {
@@ -72,8 +101,12 @@ const AIChatSection = () => {
           ]);
         });
 
-        // ✅ Booking handling
-      } else if (data.bookingSuccess !== undefined) {
+        // Show location popup
+        setShowLocationPopup(true);
+      }
+
+      // ✅ Booking handling
+      else if (data.bookingSuccess !== undefined) {
         setMessages((prev) => [...prev, { sender: "bot", text: data.message }]);
 
         if (data.appointment) {
@@ -89,20 +122,30 @@ const AIChatSection = () => {
             },
           ]);
         }
-
-        // ✅ Normal chat
       } else {
+        // Format multi-line bot responses as bullet points if not already markdown
+        let botText = data.reply || data.message || "Sorry, I didn’t understand.";
+        if (botText.includes("\n") && !botText.trim().startsWith("- ")) {
+          botText = botText
+            .split("\n")
+            .filter(line => line.trim())
+            .map(line => `- ${line.trim()}`)
+            .join("\n");
+        }
         setMessages((prev) => [
           ...prev,
           {
             sender: "bot",
-            text: data.reply || data.message || "Sorry, I didn’t understand.",
+            text: botText,
           },
         ]);
       }
     } catch (error) {
       console.error("Chat API error:", error);
-      setShowLoginPrompt(true);
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "Network or server error. Please try again later." },
+      ]);
     }
 
     setLoading(false);
@@ -165,7 +208,11 @@ const AIChatSection = () => {
                         : "bg-muted text-foreground"
                     }`}
                   >
-                    {msg.text}
+                    {msg.sender === "bot" ? (
+                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                    ) : (
+                      msg.text
+                    )}
                   </span>
                 </div>
               ))}
@@ -185,6 +232,52 @@ const AIChatSection = () => {
                 <Send className="w-4 h-4 mr-1" />
                 Send
               </Button>
+              {/* Location consent UI */}
+              {showLocationPopup && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
+                    <h3 className="text-lg font-semibold mb-2">Share Your Location</h3>
+                    <p className="mb-4">To help you faster, please share your location with our support team.</p>
+                    <Button
+                      variant="default"
+                      onClick={async () => {
+                        setLocationConsent(true);
+                        setShowLocationPopup(false);
+                        if (navigator.geolocation) {
+                          setLoading(true);
+                          navigator.geolocation.getCurrentPosition(async (pos) => {
+                            const { latitude, longitude } = pos.coords;
+                            setUserLocation(`${latitude},${longitude}`);
+                            // Send location to backend for SOS
+                            await fetch("http://localhost:8080/api/chat", {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                              },
+                              body: JSON.stringify({ message: input, lang, location: `${latitude},${longitude}` }),
+                              credentials: "include",
+                            });
+                            setLoading(false);
+                          }, () => {
+                            setUserLocation(null);
+                            setLoading(false);
+                          }, { timeout: 10000 });
+                        }
+                      }}
+                    >
+                      Share My Location
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="mt-2"
+                      onClick={() => setShowLocationPopup(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

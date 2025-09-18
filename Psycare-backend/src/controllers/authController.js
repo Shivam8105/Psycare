@@ -1,17 +1,17 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = "35391d39f508992e4432b3b8930003eb822978c0db2a1def436f283d72b621c4";
+const JWT_SECRET = process.env.JWT_SECRET || '35391d39f508992e4432b3b8930003eb822978c0db2a1def436f283d72b621c4';
 
 // ========================= SIGNUP =========================
 export const signup = async (req, res) => {
   try {
     console.log('Signup request body:', req.body);
-    const { name, email, password, role } = req.body;
+  const { name, email, password, mobile, role } = req.body;
 
     // Validate inputs
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({ message: 'Name, email, password, and role are required.' });
+    if (!name || !email || !password || !role || !mobile) {
+      return res.status(400).json({ message: 'Name, email, password, mobile, and role are required.' });
     }
 
     // Check if user already exists
@@ -21,7 +21,7 @@ export const signup = async (req, res) => {
     }
 
     // Create new user
-    const user = new User({ name, email, password, role });
+  const user = new User({ name, email, password, mobile, role });
     await user.save();
 
     res.status(201).json({ message: 'User registered successfully.' });
@@ -62,7 +62,8 @@ export const login = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        mobile: user.mobile
       }
     });
   } catch (err) {

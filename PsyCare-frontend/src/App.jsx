@@ -20,6 +20,7 @@ import { useUser } from "./context/UserContext.jsx";
 import Profile from "./pages/Profile.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import AuthHandler from "./AuthHandler.jsx";
+import TestPage from "./components/TestPage.jsx";
 
 import AudioLibraryPage from "./pages/AudioLibraryPage.jsx";
 import VideoPage from "./pages/VideoPage.jsx";
@@ -47,7 +48,6 @@ const App = () => {
             {showNavbar && <Navbar key={user?.id || user?.email || "navbar"} />}
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/chat" element={<ChatSection />} />
               <Route path="/appointments" element={<AppointmentsSection />} />
               <Route path="/book" element={<BookingSection />} />
               <Route path="/resources" element={<WellnessResources />} />
@@ -58,13 +58,6 @@ const App = () => {
               <Route path="/profile" element={<Profile />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="*" element={<NotFound />} />
-              <Route path="*" element={<NotFound />} />
-              <Route path="/" element={<Index />} />
-              <Route path="/library/:title" element={<AudioLibraryPage />} />
-              <Route path="/videos/:title" element={<VideoPage />} /> 
-              <Route path="/breathing-exercises/:title" element={<BreathingExercisesPage />} />
-              <Route path="/games/:title" element={<InteractiveGamesPage />} />
-
             </Routes>
           </BrowserRouter>
         </UserProvider>

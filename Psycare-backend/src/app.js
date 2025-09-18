@@ -21,8 +21,8 @@ app.use(express.json());
 // const userRoutes = require('./routes/userRoutes');
 // app.use('/api/users', userRoutes);
 app.use(cors({
-  origin: "http://localhost:5000",  // frontend origin
-  methods: ["GET", "POST","PATCH","DELETE"],
+  origin: "http://localhost:5001",  // frontend origin
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true
 }));
 app.use(bodyParser.json());

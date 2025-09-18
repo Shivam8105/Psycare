@@ -6,14 +6,38 @@ export default function AppointmentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const getStoredUserRole = () => {
+    try {
+      const userString = localStorage.getItem("user");
+      if (!userString) return null;
 
-  const token = localStorage.getItem("token");
+      const user = JSON.parse(userString);
+      return user?.role || null; // safely return role if it exists
+    } catch (err) {
+      console.error("Error parsing stored user:", err);
+      return null;
+    }
+  };
+
+  const role = getStoredUserRole();
+  const getToken = () => {
+    const t = localStorage.getItem("token");
+    if (!t || t === "null" || t === "undefined") return null;
+    return t;
+  };
+  const token = getToken();
 
   // Fetch appointments
   const fetchAppointments = async () => {
     setLoading(true);
     setError(null);
 
+    if (!token) {
+      setError("unauthorized");
+      setLoading(false);
+      setShowLoginPrompt(true);
+      return;
+    }
     try {
       const res = await fetch("http://localhost:8080/api/appointments", {
         headers: {
@@ -25,6 +49,7 @@ export default function AppointmentsPage() {
       if (res.status === 401) {
         setError("unauthorized");
         setLoading(false);
+        setShowLoginPrompt(true);
         return;
       }
 
@@ -32,9 +57,7 @@ export default function AppointmentsPage() {
 
       const data = await res.json();
 
-      // Transform backend data for display
       const formatted = data.data.map((appt) => {
-        const student = appt.studentId;
         const therapist = appt.psychologistId;
         const dt = new Date(appt.appointmentTime);
 
@@ -43,7 +66,10 @@ export default function AppointmentsPage() {
           name: therapist.name,
           email: therapist.email,
           date: dt.toLocaleDateString(),
-          time: dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          time: dt.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
           duration: `${appt.duration} mins`,
           status: appt.status,
         };
@@ -84,8 +110,43 @@ export default function AppointmentsPage() {
         return;
       }
 
-      // Remove cancelled appointment from UI
-      setAppointments((prev) => prev.filter((a) => a._id !== id));
+      setAppointments((prev) =>
+        prev.map((a) => (a._id === id ? { ...a, status: "cancelled" } : a))
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Confirm appointment
+  const handleConfirm = async (id) => {
+    try {
+      const res = await fetch(
+        `http://localhost:8080/api/appointments/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: "confirmed" })
+        }
+      );
+
+      if (res.status === 401) {
+        setShowLoginPrompt(true);
+        return;
+      }
+
+      const data = await res.json();
+      if (data.error) {
+        console.error(data.error);
+        return;
+      }
+
+      setAppointments((prev) =>
+        prev.map((a) => (a._id === id ? { ...a, status: "confirmed" } : a))
+      );
     } catch (err) {
       console.error(err);
     }
@@ -101,7 +162,9 @@ export default function AppointmentsPage() {
     <div className="relative min-h-screen bg-transparent" id="appointments">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-semibold text-gray-900">Your Appointments</h1>
+          <h1 className="text-3xl font-semibold text-gray-900">
+            Your Appointments
+          </h1>
           <p className="text-gray-600 text-sm">
             Manage your counseling sessions and track your mental health journey
           </p>
@@ -110,11 +173,15 @@ export default function AppointmentsPage() {
         {loading && <p className="text-center text-gray-500">Loading...</p>}
 
         {!loading && error === "unauthorized" && (
-          <p className="text-center text-gray-500">Please login to see your appointments.</p>
+          <p className="text-center text-gray-500">
+            Please login to see your appointments.
+          </p>
         )}
 
         {!loading && error === "network" && (
-          <p className="text-center text-red-500">⚠️ Unable to fetch appointments. Try again later.</p>
+          <p className="text-center text-red-500">
+            ⚠️ Unable to fetch appointments. Try again later.
+          </p>
         )}
 
         <div className="space-y-4">
@@ -141,8 +208,19 @@ export default function AppointmentsPage() {
                 <span>🕑 {s.time}</span>
                 <span>⏱ {s.duration}</span>
               </div>
+
               {s.status !== "cancelled" && (
                 <div className="flex flex-wrap gap-2 mt-3">
+                  {/* ✅ Only psychologists can confirm, and only if pending */}
+                  {role == "psychologist" && s.status == "pending" && (
+                    <button
+                      onClick={() => handleConfirm(s._id)}
+                      className="px-3 py-1 rounded-md text-xs border border-green-200 text-green-700 hover:bg-green-50"
+                    >
+                      Confirm
+                    </button>
+                  )}
+                  {/* Cancel available for everyone */}
                   <button
                     onClick={() => handleCancel(s._id)}
                     className="px-3 py-1 rounded-md text-xs border border-gray-200 hover:bg-gray-50"
@@ -156,7 +234,6 @@ export default function AppointmentsPage() {
         </div>
       </div>
 
-      {/* 🚨 Show LoginPrompt only when cancelling unauthorized */}
       {showLoginPrompt && (
         <LoginPrompt
           onLogin={() => (window.location.href = "/login")}

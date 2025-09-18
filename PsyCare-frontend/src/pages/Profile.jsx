@@ -1,3 +1,4 @@
+// ...existing code...
 import React, { useState, useEffect } from "react";
 
 const avatars = [
@@ -9,6 +10,7 @@ const Profile = () => {
   const [user, setUser] = useState(null);
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState(avatars[0]);
+  const [mobile, setMobile] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
@@ -17,9 +19,10 @@ const Profile = () => {
     try {
       const storedUser = JSON.parse(localStorage.getItem("user"));
       if (storedUser) {
-        setUser(storedUser);
-        setName(storedUser.funnyName || storedUser.name || "");
-        setAvatar(storedUser.avatar || avatars[0]);
+  setUser(storedUser);
+  setName(storedUser.funnyName || storedUser.name || "");
+  setAvatar(storedUser.avatar || avatars[0]);
+  setMobile(storedUser.mobile || "");
       }
     } catch {}
   }, []);
@@ -31,7 +34,7 @@ const Profile = () => {
     setSuccess("");
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8080/api/user/update", {
+  const res = await fetch("http://localhost:8080/api/users/update", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -40,15 +43,16 @@ const Profile = () => {
         body: JSON.stringify({
           funnyName: name,
           avatar,
+          mobile,
         }),
       });
       const text = await res.text();
       const data = text ? JSON.parse(text) : {};
       if (!res.ok) throw new Error(data.message || "Update failed");
       // Update localStorage
-      const updatedUser = { ...user, funnyName: name, avatar };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      setUser(updatedUser);
+  const updatedUser = { ...user, funnyName: name, avatar, mobile };
+  localStorage.setItem("user", JSON.stringify(updatedUser));
+  setUser(updatedUser);
       setSuccess("Profile updated successfully!");
       // Redirect to home after short delay
       setTimeout(() => {
@@ -105,6 +109,18 @@ const Profile = () => {
             className="w-full px-4 py-3 rounded-lg bg-[#f7f6ff] border border-[#eeebfa] text-gray-700 font-medium focus:ring-2 focus:ring-[#a682e3] outline-none"
             placeholder="Enter your funny name"
           />
+        </div>
+        <div className="mb-6">
+          <label className="block font-semibold text-gray-700 mb-2">Mobile Number</label>
+          <input
+            type="tel"
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg bg-[#f7f6ff] border border-[#eeebfa] text-gray-700 font-medium focus:ring-2 focus:ring-[#a682e3] outline-none"
+            placeholder="Enter your mobile number"
+            required
+          />
+          <p className="text-xs text-muted-foreground mt-1">This number will not be shared. It will only be used to contact you if you feel depressed.</p>
         </div>
         <button
           type="submit"

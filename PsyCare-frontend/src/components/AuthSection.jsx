@@ -1,3 +1,4 @@
+// ...existing code...
 import React, { useState } from "react";
 import DashboardLoading from "./DashboardLoading.jsx";
 import { useNavigate } from "react-router-dom";
@@ -74,6 +75,7 @@ const AuthSection = () => {
             name: formData.fullName,
             email: formData.email,
             password: formData.password,
+            mobile: formData.mobile,
             role: "student", // Default role
             avatar: selectedAvatar,
           }),
@@ -92,6 +94,13 @@ const AuthSection = () => {
       data = text ? JSON.parse(text) : {};
       if (!res.ok) throw new Error(data.message || "Request failed");
       setSuccess(data.message || (isSignUp ? "Signup successful!" : "Login successful!"));
+      if (isSignUp) {
+        // After signup, redirect to login page
+        setTimeout(() => {
+          setIsSignUp(false);
+        }, 1500);
+        return;
+      }
       if (data.token && data.user) {
         // Assign a random funny name if not present (for simple login)
         if (!data.user.funnyName) {
@@ -239,6 +248,23 @@ const AuthSection = () => {
                 {showPassword ? "🙈" : "👁️"}
               </button>
             </div>
+            {isSignUp && (
+              <div className="mb-4">
+                <div className="relative flex items-center">
+                  <span className="absolute left-4 text-gray-400 flex items-center h-full">📱</span>
+                  <input
+                    type="tel"
+                    name="mobile"
+                    placeholder="Mobile Number"
+                    value={formData.mobile || ""}
+                    onChange={handleInputChange}
+                    className="w-full pl-12 pr-4 py-3 rounded-lg bg-[#f7f6ff] border border-[#eeebfa] text-gray-700 font-medium focus:ring-2 focus:ring-[#a682e3] outline-none"
+                    required
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2 text-left">This number will not be shared. It will only be used to contact you if you feel depressed.</p>
+              </div>
+            )}
 
 
             <button

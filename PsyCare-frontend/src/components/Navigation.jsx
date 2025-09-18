@@ -31,7 +31,7 @@ const Navigation = () => {
     { to: "/resources", label: "Resources", icon: BookOpen },
     { to: "/community", label: "Community", icon: Users },
     { to: "/appointments", label: "Appointments", icon: UserCheck },
-    { to: "/chat", label: "Chat", icon: UserCheck },
+    // Removed Chat link
   ];
 
   return (

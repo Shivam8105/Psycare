@@ -1,0 +1,376 @@
+import React, { useState, useEffect } from "react";
+import jsPDF from "jspdf";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const OptionCard = ({ optionText, isSelected, onSelect }) => {
+  return (
+    <button
+      type="button"
+      className={`w-full text-left flex items-center p-4 mb-3 rounded-2xl border transition-all duration-150 ease-in-out shadow-sm ${
+        isSelected
+          ? "bg-purple-100 border-purple-500 ring-2 ring-purple-300"
+          : "bg-white border-gray-200 hover:border-purple-300 hover:shadow-md"
+      }`}
+      onClick={onSelect}
+    >
+      <div
+        className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-xl ${
+          isSelected ? "bg-purple-200 text-purple-700" : "bg-gray-100 text-gray-500"
+        }`}
+      >
+        📝
+      </div>
+      <div className="ml-4">
+        <p
+          className={`font-semibold text-lg ${
+            isSelected ? "text-purple-700" : "text-gray-800"
+          }`}
+        >
+          {optionText}
+        </p>
+      </div>
+    </button>
+  );
+};
+
+const TestPage = () => {
+  // PDF generation for feedback report (wellness record, digital verification, improved layout)
+  const generateFeedbackReport = async () => {
+    if (!testResult) return;
+    const { rawScore, rawMax, message, testName } = testResult;
+    const percent = rawMax > 0 ? Math.round((rawScore / rawMax) * 100) : 0;
+    let severity = "Normal";
+    let advice = "Your results are within a normal range. Keep taking care of your wellness!";
+    if (percent >= 80) {
+      severity = "Critical";
+      advice = "Your score indicates a critical level of concern. Please reach out to a mental health professional or counselor immediately.";
+    } else if (percent >= 60) {
+      severity = "High";
+      advice = "Your score is high. Consider talking to a counselor or using stress management resources.";
+    } else if (percent >= 40) {
+      severity = "Moderate";
+      advice = "Your score is moderate. Monitor your wellness and seek support if needed.";
+    }
+
+    // Prepare record data for digital verification
+    const userId = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : "anonymous";
+    const record = {
+      userId,
+      testName: testName || "Wellness Test",
+      date: new Date().toLocaleString(),
+      score: `${rawScore} / ${rawMax} (${percent}%)`,
+      severity,
+      advice,
+      answers,
+      message,
+    };
+
+    // Simple digital verification: SHA-256 hash of record
+    async function sha256(str) {
+      const buf = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(x => x.toString(16).padStart(2, "0")).join("");
+    }
+    const recordString = JSON.stringify(record);
+    const hash = await sha256(recordString);
+
+    // PDF layout
+    const doc = new jsPDF();
+    // Header
+    doc.setFillColor(120, 94, 240); // purple
+    doc.rect(0, 0, 210, 25, "F");
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(20);
+    doc.text("PsyCare Wellness Record", 105, 15, {align: "center"});
+
+    // Main info
+    doc.setTextColor(40,40,40);
+    doc.setFontSize(13);
+    doc.text(`Test: ${record.testName}`, 20, 35);
+    doc.text(`Date: ${record.date}`, 20, 43);
+    doc.text(`User ID: ${record.userId}`, 20, 51);
+    doc.text(`Score: ${record.score}`, 20, 59);
+    doc.text(`Severity: ${record.severity}`, 20, 67);
+
+    // Answers section
+    doc.setFontSize(14);
+    doc.setTextColor(120, 94, 240);
+    doc.text("Your Answers:", 20, 77);
+    doc.setFontSize(12);
+    doc.setTextColor(40,40,40);
+    let y = 85;
+    for (const [qid, optIdx] of Object.entries(record.answers)) {
+      const qObj = questions.find(q => q._id === qid);
+      if (qObj) {
+        doc.text(`Q: ${qObj.question_text}`, 20, y, {maxWidth: 170});
+        y += 6;
+        doc.text(`Selected: ${qObj.options[optIdx]}`, 25, y, {maxWidth: 170});
+        y += 8;
+        if (y > 260) { doc.addPage(); y = 20; }
+      }
+    }
+
+    // Feedback section
+    doc.setFontSize(14);
+    doc.setTextColor(120, 94, 240);
+    doc.text("Feedback:", 20, y);
+    y += 7;
+    doc.setFontSize(12);
+    doc.setTextColor(40,40,40);
+    doc.text(record.advice, 20, y, {maxWidth: 170});
+    y += 12;
+    if (record.message) {
+      doc.text(record.message, 20, y, {maxWidth: 170});
+      y += 10;
+    }
+
+    // Digital verification section
+    doc.setFontSize(13);
+    doc.setTextColor(120, 94, 240);
+    doc.text("Digital Verification:", 20, y);
+    y += 7;
+    doc.setFontSize(10);
+    doc.setTextColor(80,80,80);
+    doc.text(`SHA-256: ${hash.slice(0, 32)}...`, 20, y, {maxWidth: 170});
+    y += 6;
+    doc.text("Verify this record at psycare.app/verify", 20, y, {maxWidth: 170});
+
+    // Footer branding
+    doc.setFontSize(10);
+    doc.setTextColor(120, 94, 240);
+    doc.text("Generated by PsyCare | psycare.app", 105, 290, {align: "center"});
+
+    doc.save("PsyCare_Wellness_Record.pdf");
+  };
+  const { testId } = useParams();
+  const navigate = useNavigate();
+  const [questions, setQuestions] = useState([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [testResult, setTestResult] = useState(null);
+
+  useEffect(() => {
+    const fetchTestQuestions = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("You are not authenticated.");
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/tests/${testId}/questions`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setQuestions(response.data);
+      } catch (err) {
+        setError("Could not load the test.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTestQuestions();
+  }, [testId]);
+
+  const handleOptionSelect = (optionIndex) => {
+    const currentQuestion = questions[currentQuestionIndex];
+
+    setAnswers((prev) => ({
+      ...prev,
+      [currentQuestion._id]: optionIndex, // store option index
+    }));
+
+    // auto next (except last)
+    if (currentQuestionIndex < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestionIndex((prev) => prev + 1);
+      }, 300);
+    }
+  };
+
+  const handleSubmit = async () => {
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user")).id
+      : null;
+
+    if (!token || !userId) {
+      setError("Authentication details are missing. Please log in again.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const payload = { userId, answers };
+      console.log("Submitting payload:", payload);
+      const response = await axios.post(
+        `http://localhost:8080/api/tests/${testId}/submit`,
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setTestResult(response.data);
+    } catch (err) {
+      console.error(err);
+      setError("There was a problem submitting your answers.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // derived states
+  const currentQuestion = questions[currentQuestionIndex];
+  const selectedOptionIndex = currentQuestion
+    ? answers[currentQuestion._id]
+    : null;
+  const isLastQuestion = currentQuestionIndex === questions.length - 1;
+  // Progress based on answered questions only
+  const answeredCount = Object.keys(answers).length;
+  const progress = questions.length > 0 ? (answeredCount / questions.length) * 100 : 0;
+
+  const renderContent = () => {
+    if (isLoading)
+      return (
+        <div className="text-center text-lg text-psycarePurple-700 animate-pulse">
+          Loading Test...
+        </div>
+      );
+    if (error)
+      return <div className="text-center text-lg text-red-600">{error}</div>;
+
+    if (testResult) {
+      console.log(testResult);
+      return (
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">
+            Test Completed!
+          </h2>
+          <p className="text-lg text-gray-600 mb-4">{testResult.message}</p>
+
+          <p className="text-4xl font-bold text-psycarePurple-600 mb-6">
+            Your Score: {testResult.rawScore} / {testResult.rawMax}
+          </p>
+
+          {/* ✅ Show helpful links */}
+          {testResult.links && testResult.links.length > 0 && (
+            <div className="space-y-3 mb-6">
+              {testResult.links.map((link, index) => {
+                const isExternal = link.url.startsWith("http");
+                return isExternal ? (
+                  <a
+                    key={index}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full px-6 py-3 bg-psycarePurple-500 text-white rounded-full text-center hover:bg-psycarePurple-700 transition"
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <button
+                    key={index}
+                    onClick={() => navigate(link.url)}
+                    className="w-full px-6 py-3 bg-psycarePurple-500 text-white rounded-full hover:bg-psycarePurple-700 transition"
+                  >
+                    {link.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <button
+            onClick={generateFeedbackReport}
+            className="mt-4 px-6 py-2 bg-psycarePurple-600 text-white rounded-full hover:bg-psycarePurple-700 transition"
+          >
+            Download Feedback Report (PDF)
+          </button>
+
+          <button
+            onClick={() => navigate("/tests")}
+            className="mt-6 px-6 py-2 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition"
+          >
+            Back to Tests
+          </button>
+        </div>
+      );
+    }
+
+    if (currentQuestion) {
+      return (
+        <>
+          <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+            {currentQuestion.question_text}
+          </h2>
+          <div className="space-y-4">
+            {currentQuestion.options.map((text, index) => (
+              <OptionCard
+                key={index}
+                optionText={text}
+                isSelected={selectedOptionIndex === index}
+                onSelect={() => handleOptionSelect(index)}
+              />
+            ))}
+          </div>
+          <div className="mt-8 text-center">
+            {isLastQuestion && (
+              <button
+                onClick={handleSubmit}
+                disabled={selectedOptionIndex === null || isSubmitting}
+                className="px-8 py-3 rounded-full text-white font-semibold text-lg transition-all duration-300 ease-in-out bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? "Submitting..." : "Submit Test"}
+              </button>
+            )}
+          </div>
+        </>
+      );
+    }
+  };
+
+  return (
+  <div className="min-h-screen flex flex-col items-center justify-center p-4 font-sans bg-gradient-to-br from-purple-100 via-blue-100 to-pink-100">
+      <header className="w-full max-w-2xl flex justify-between items-center mb-6 p-4 bg-white bg-opacity-80 rounded-xl shadow-lg">
+        <button
+          onClick={() => navigate("/tests")}
+          className="text-gray-600 hover:text-psycarePurple-700 transition-colors duration-200"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            ></path>
+          </svg>
+        </button>
+        <div className="flex-1 mx-4">
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div
+              className="bg-psycarePurple-500 h-2.5 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        </div>
+      </header>
+      <main className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-2xl">
+  {renderContent()}
+      </main>
+    </div>
+  );
+};
+
+export default TestPage;

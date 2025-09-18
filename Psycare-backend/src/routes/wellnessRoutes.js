@@ -12,7 +12,7 @@ import {
   deleteVideo
 } from "../controllers/wellnessController.js";
 
-import authMiddleware from "../middlewares/authmiddleware.js";
+import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -31,3 +31,4 @@ router.put("/videos/:id", authMiddleware, updateVideo);
 router.delete("/videos/:id", authMiddleware, deleteVideo);
 
 export default router;
+
