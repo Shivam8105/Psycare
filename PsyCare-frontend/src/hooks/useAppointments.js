@@ -8,13 +8,14 @@ export function useAppointments() {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/appointments", {
+      const res = await fetch("http://localhost:8080/api/appointment", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // ✅ include cookies/session
+        credentials: "include",
       });
 
       if (res.status === 401) {
+        // 🚨 show message but not login card
         setError("unauthorized");
         setAppointments([]);
         setLoading(false);
@@ -24,7 +25,8 @@ export function useAppointments() {
       if (!res.ok) throw new Error("Failed to fetch");
 
       const data = await res.json();
-      setAppointments(data); // backend should return array
+      setAppointments(data);
+      setError(null);
     } catch (err) {
       console.error("Fetch appointments error:", err);
       setError("network");
@@ -34,22 +36,22 @@ export function useAppointments() {
 
   const cancelAppointment = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/appointments/${id}`, {
+      const res = await fetch(`http://localhost:8080/api/appointments/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
 
       if (res.status === 401) {
-        setError("unauthorized");
-        return;
+        return "unauthorized"; // 🚨 handled in component → show card
       }
 
       if (!res.ok) throw new Error("Cancel failed");
 
-      // remove from UI
       setAppointments((prev) => prev.filter((a) => a._id !== id));
+      return "success";
     } catch (err) {
       console.error("Cancel appointment error:", err);
+      return "error";
     }
   };
 

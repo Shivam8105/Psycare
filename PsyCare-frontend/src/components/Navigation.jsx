@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useUser } from "../context/UserContext.jsx";
 import {
   Menu,
   X,
@@ -8,62 +9,30 @@ import {
   BookOpen,
   Users,
   UserCheck,
+  LogIn,
   UserPlus,
 } from "lucide-react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-
+  // Use user context for live updates
+  const { user, setUser } = useUser();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Check if user is logged in
-  let user = null;
-  const token = localStorage.getItem("token");
-  try {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (token && storedUser && (storedUser.funnyName || storedUser.avatar)) {
-      user = storedUser;
-    }
-  } catch {}
+  // Debug log to trace user context
+  console.log("Navbar user context:", user);
 
   const navItems = [
-    { id: "home", label: "Home", icon: Brain },
-    { id: "ai-chat", label: "AI Chat", icon: MessageCircle },
-    { id: "book", label: "Book", icon: Calendar },
-    { id: "resources", label: "Resources", icon: BookOpen },
-    { id: "community", label: "Community", icon: Users },
-    { id: "appointments", label: "Appointments", icon: UserCheck },
-    { id: "chat", label: "Chat", icon: UserCheck },
+    { to: "/", label: "Home", icon: Brain },
+    { to: "/ai-chat", label: "AI Chat", icon: MessageCircle },
+    { to: "/book", label: "Book", icon: Calendar },
+    { to: "/resources", label: "Resources", icon: BookOpen },
+    { to: "/community", label: "Community", icon: Users },
+    { to: "/appointments", label: "Appointments", icon: UserCheck },
+    { to: "/chat", label: "Chat", icon: UserCheck },
   ];
-
-  // Scroll to top on route change
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
-
-  const handleNavClick = (sectionId) => {
-    if (location.pathname !== "/") {
-      navigate("/", { replace: false });
-      setTimeout(() => {
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
-      }, 50);
-    } else {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
-    }
-    setIsMenuOpen(false);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setShowUserMenu(false);
-    setIsMenuOpen(false);
-    window.location.reload();
-  };
 
   return (
     <nav className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border/50 shadow-soft">
@@ -75,7 +44,9 @@ const Navigation = () => {
               <Brain className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold font-poppins text-foreground">PsyCare</h1>
+              <h1 className="text-xl font-bold font-poppins text-foreground">
+                PsyCare
+              </h1>
               <p className="text-xs text-muted-foreground">by NeuroNova</p>
             </div>
           </Link>
@@ -83,29 +54,27 @@ const Navigation = () => {
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
+              <Link
+                key={item.to}
+                to={item.to}
                 className="flex items-center space-x-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 group"
               >
                 <item.icon className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                 <span>{item.label}</span>
-              </button>
+              </Link>
             ))}
           </div>
 
-          {/* Desktop Auth / User */}
+          {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3 relative">
-            {user ? (
+            {user && user.avatar && user.funnyName ? (
               <>
                 <button
                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#f7f6ff] border border-[#eeebfa] focus:outline-none"
                   onClick={() => setShowUserMenu((prev) => !prev)}
                 >
-                  <span className="text-2xl">{user.avatar || "😊"}</span>
-                  <span className="font-semibold text-[#a682e3]">
-                    {user.funnyName || user.name || "User"}
-                  </span>
+                  <span className="text-2xl">{user.avatar}</span>
+                  <span className="font-semibold text-[#a682e3]">{user.funnyName}</span>
                 </button>
                 {showUserMenu && (
                   <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
@@ -118,7 +87,13 @@ const Navigation = () => {
                     </Link>
                     <button
                       className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-b-lg"
-                      onClick={handleLogout}
+                      onClick={() => {
+                        localStorage.removeItem("token");
+                        localStorage.removeItem("user");
+                        setUser(null);
+                        setShowUserMenu(false);
+                        navigate("/");
+                      }}
                     >
                       Logout
                     </button>
@@ -146,7 +121,11 @@ const Navigation = () => {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-muted-foreground"
             >
-              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </Button>
           </div>
         </div>
@@ -157,18 +136,19 @@ const Navigation = () => {
         <div className="md:hidden bg-card/95 backdrop-blur-lg border-t border-border/50 shadow-medium animate-slide-in">
           <div className="px-4 py-4 space-y-3">
             {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 transition-all duration-300 w-full"
+              <Link
+                key={item.to}
+                to={item.to}
+                className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 transition-all duration-300"
+                onClick={() => setIsMenuOpen(false)}
               >
                 <item.icon className="w-4 h-4" />
                 <span>{item.label}</span>
-              </button>
+              </Link>
             ))}
 
-            {/* Mobile Auth / User */}
-            <div className="pt-4 border-t border-border/50">
+            {/* Auth Buttons in Mobile */}
+            <div className="pt-4 border-t border-border/50 space-y-2">
               {user ? (
                 <div className="relative">
                   <button
@@ -176,25 +156,27 @@ const Navigation = () => {
                     onClick={() => setShowUserMenu((prev) => !prev)}
                   >
                     <span className="text-2xl">{user.avatar || "😊"}</span>
-                    <span className="font-semibold text-[#a682e3]">
-                      {user.funnyName || user.name || "User"}
-                    </span>
+                    <span className="font-semibold text-[#a682e3]">{user.funnyName || user.name || "User"}</span>
                   </button>
                   {showUserMenu && (
                     <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                       <Link
                         to="/profile"
                         className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-t-lg"
-                        onClick={() => {
-                          setShowUserMenu(false);
-                          setIsMenuOpen(false);
-                        }}
+                        onClick={() => { setShowUserMenu(false); setIsMenuOpen(false); }}
                       >
                         Profile
                       </Link>
                       <button
                         className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-b-lg"
-                        onClick={handleLogout}
+                        onClick={() => {
+                          localStorage.removeItem("token");
+                          localStorage.removeItem("user");
+                          setUser(null);
+                          setShowUserMenu(false);
+                          setIsMenuOpen(false);
+                          navigate("/");
+                        }}
                       >
                         Logout
                       </button>

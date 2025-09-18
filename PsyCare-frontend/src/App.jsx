@@ -1,9 +1,6 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { UserProvider } from "./context/UserContext.jsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
 import Index from "./pages/Index.jsx";
 import ChatSection from "./components/ChatSection.jsx";
 import AppointmentsSection from "./components/AppointmentsSection.jsx";
@@ -15,50 +12,50 @@ import Tests from "./components/Tests.jsx" // Chat page component
 import AuthSelection from "./components/AuthSection.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import Navbar from "./components/Navigation.jsx";
-import Profile from "./pages/Profile.jsx"
+import { useUser } from "./context/UserContext.jsx";
+import Profile from "./pages/Profile.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import AuthHandler from "./AuthHandler.jsx";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      {/* Google login query param handler */}
-      {(() => {
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get('token');
-        const avatar = params.get('avatar');
-        const funnyName = params.get('funnyName');
-        const name = params.get('name');
-        const email = params.get('email');
-        const role = params.get('role');
-        if (token && avatar && funnyName) {
-          const user = { avatar, funnyName, name, email, role };
-          localStorage.setItem('token', token);
-          localStorage.setItem('user', JSON.stringify(user));
-          // Remove query params and reload to update navbar
-          window.location.replace(window.location.pathname);
-        }
-      })()}
-      <BrowserRouter>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/chat" element={<ChatSection />} />
-          <Route path="/appointments" element={<AppointmentsSection />} />
-          <Route path="/book" element={<BookingSection />} />
-          <Route path="/resources" element={<WellnessResources />} />
-          <Route path="/community" element={<CommunitySection />} />
-          <Route path="/ai-chat" element={<Ai_chat />} />
-          <Route path="/tests" element={<Tests />} />
-          <Route path="/auth" element={<AuthSelection />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+
+const App = () => {
+  const { user } = useUser?.() || {};
+  // Always show Navbar
+  const showNavbar = true;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <UserProvider>
+          <BrowserRouter>
+            <AuthHandler />
+            {/* Conditionally render Navbar except on dashboard */}
+            {showNavbar && <Navbar key={user?.id || user?.email || "navbar"} />}
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/chat" element={<ChatSection />} />
+              <Route path="/appointments" element={<AppointmentsSection />} />
+              <Route path="/book" element={<BookingSection />} />
+              <Route path="/resources" element={<WellnessResources />} />
+              <Route path="/community" element={<CommunitySection />} />
+              <Route path="/ai-chat" element={<Ai_chat />} />
+              <Route path="/tests" element={<Tests />} />
+              <Route path="/auth" element={<AuthSelection />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </UserProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

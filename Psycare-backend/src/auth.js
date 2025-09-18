@@ -13,22 +13,48 @@ passport.use(
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
       callbackURL: '/api/auth/google/callback',
+      passReqToCallback: true
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (req, accessToken, refreshToken, profile, done) => {
       try {
         const email = profile.emails[0].value;
         let user = await User.findOne({ email });
 
+        // Default funny name and avatar for Google users
+        const DEFAULT_FUNNY_NAME = "Jugaadu";
+        const DEFAULT_AVATAR = "😉";
+
+        // Always assign 'student' as default role for Google login
+        const role = 'student';
         if (!user) {
           user = await User.create({
             name: profile.displayName || 'Unnamed User',
             email,
             password: '', // not needed for Google users
-            role: 'student', // default role, you can customize this
+            role,
+            funnyName: DEFAULT_FUNNY_NAME,
+            avatar: DEFAULT_AVATAR
           });
+          return done(null, user);
+        } else {
+          let needsUpdate = false;
+          if (!user.funnyName) {
+            user.funnyName = DEFAULT_FUNNY_NAME;
+            needsUpdate = true;
+          }
+          if (!user.avatar) {
+            user.avatar = DEFAULT_AVATAR;
+            needsUpdate = true;
+          }
+          if (!user.role) {
+            user.role = role;
+            needsUpdate = true;
+          }
+          if (needsUpdate) {
+            await user.save();
+          }
+          return done(null, user);
         }
-
-        return done(null, user);
       } catch (err) {
         return done(err, null);
       }
