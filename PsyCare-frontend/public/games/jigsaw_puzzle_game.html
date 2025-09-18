@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jigsaw Puzzle</title>
+    <style>
+        body {
+            background-color: #f0e6f2;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #4a4a4a;
+            user-select: none;
+            /* overflow: hidden;  <-- This was the problem, so it's removed */
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #5d3f6a;
+            margin-bottom: 20px;
+        }
+
+        #puzzle-container {
+            display: grid;
+            border: 5px solid #d4a7d4;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .puzzle-piece {
+            background-size: cover;
+            border: 1px solid #e0e0e0;
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+            touch-action: none;
+        }
+        
+        .puzzle-piece:hover {
+            box-shadow: inset 0 0 0 3px #8c5a96;
+        }
+
+        .puzzle-piece.dragging {
+            opacity: 0.8;
+            cursor: grabbing;
+            z-index: 1000;
+        }
+
+        #controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #status {
+            font-size: 1.2em;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #5d3f6a;
+        }
+
+        #reset-button {
+            padding: 12px 24px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #8c5a96;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        
+        #reset-button:hover {
+            background-color: #72477c;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <h1>Jigsaw Puzzle</h1>
+    <div id="puzzle-container"></div>
+    <div id="controls">
+        <button id="reset-button">Reset</button>
+    </div>
+    <div id="status">Drag and drop pieces to solve the puzzle!</div>
+
+    <script>
+        const puzzleContainer = document.getElementById('puzzle-container');
+        const resetButton = document.getElementById('reset-button');
+        const statusDiv = document.getElementById('status');
+        
+        const image = new Image();
+        image.src = 'https://picsum.photos/800/800'; 
+        const gridSize = 3;
+        const pieces = [];
+
+        let isSolving = false;
+
+        image.onload = function() {
+            createPuzzle();
+        };
+
+        image.onerror = function() {
+            statusDiv.textContent = 'Error loading image. Please check the URL.';
+        };
+        
+        function createPuzzle() {
+            pieces.length = 0;
+            puzzleContainer.innerHTML = '';
+            puzzleContainer.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+            puzzleContainer.style.width = '600px';
+            puzzleContainer.style.height = '600px';
+
+            const pieceWidth = puzzleContainer.clientWidth / gridSize;
+            const pieceHeight = puzzleContainer.clientHeight / gridSize;
+
+            for (let i = 0; i < gridSize * gridSize; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'puzzle-piece';
+                piece.style.width = `${pieceWidth}px`;
+                piece.style.height = `${pieceHeight}px`;
+                piece.style.backgroundImage = `url(${image.src})`;
+                piece.style.backgroundSize = `${puzzleContainer.clientWidth}px ${puzzleContainer.clientHeight}px`;
+                piece.draggable = true;
+                
+                const x = i % gridSize;
+                const y = Math.floor(i / gridSize);
+
+                piece.style.backgroundPosition = `-${x * pieceWidth}px -${y * pieceHeight}px`;
+                piece.dataset.index = i;
+                pieces.push(piece);
+            }
+            shufflePieces();
+            isSolving = true;
+            statusDiv.textContent = "Drag and drop pieces to solve the puzzle!";
+        }
+        
+        function shufflePieces() {
+            const shuffledPieces = [...pieces];
+            for (let i = shuffledPieces.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledPieces[i], shuffledPieces[j]] = [shuffledPieces[j], shuffledPieces[i]];
+            }
+            shuffledPieces.forEach(piece => puzzleContainer.appendChild(piece));
+        }
+        
+        // Drag and drop logic
+        let dragged = null;
+        
+        puzzleContainer.addEventListener('dragstart', (e) => {
+            if (!isSolving) return;
+            dragged = e.target;
+            dragged.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        
+        puzzleContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const target = e.target;
+            // Add a visual cue for the drop target
+            if (target && target.classList.contains('puzzle-piece') && dragged !== target) {
+                target.style.boxShadow = 'inset 0 0 0 5px #ff5733';
+            }
+        });
+
+        puzzleContainer.addEventListener('dragleave', (e) => {
+            const target = e.target;
+            if (target && target.classList.contains('puzzle-piece')) {
+                target.style.boxShadow = ''; // Reset the box-shadow
+            }
+        });
+        
+        puzzleContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const target = e.target;
+            target.style.boxShadow = ''; // Reset box-shadow on drop
+            if (target && target.classList.contains('puzzle-piece') && dragged !== target) {
+                swapPieces(dragged, target);
+            }
+            dragged.classList.remove('dragging');
+            checkWin();
+        });
+
+        function swapPieces(piece1, piece2) {
+            const parent = piece1.parentNode;
+            
+            // Create a temporary placeholder to maintain the correct DOM structure
+            const temp = document.createElement('div');
+            parent.insertBefore(temp, piece2);
+            parent.insertBefore(piece2, piece1);
+            parent.insertBefore(piece1, temp);
+            parent.removeChild(temp);
+        }
+        
+        function checkWin() {
+            const currentOrder = Array.from(puzzleContainer.children);
+            let solved = true;
+            for (let i = 0; i < currentOrder.length; i++) {
+                if (parseInt(currentOrder[i].dataset.index) !== i) {
+                    solved = false;
+                    break;
+                }
+            }
+            if (solved) {
+                isSolving = false;
+                statusDiv.textContent = 'Congratulations! You solved the puzzle!';
+                const pieces = puzzleContainer.children;
+                for (const piece of pieces) {
+                    piece.style.border = 'none';
+                    piece.draggable = false;
+                }
+            }
+        }
+        
+        resetButton.addEventListener('click', createPuzzle);
+        window.addEventListener('resize', createPuzzle);
+        
+        image.onload = createPuzzle;
+    </script>
+</body>
+</html>

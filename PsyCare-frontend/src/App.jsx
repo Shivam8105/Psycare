@@ -1,3 +1,7 @@
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider } from "./context/UserContext.jsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -17,11 +21,15 @@ import Profile from "./pages/Profile.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import AuthHandler from "./AuthHandler.jsx";
 
+import AudioLibraryPage from "./pages/AudioLibraryPage.jsx";
+import VideoPage from "./pages/VideoPage.jsx";
+import ScrollToTop from "./ScrollToTop.jsx";
+import BreathingExercisesPage from "./pages/BreathingExercisesPage.jsx";
+import InteractiveGamesPage from "./pages/InteractiveGamesPage.jsx";
+
+
 const queryClient = new QueryClient();
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 
 const App = () => {
   const { user } = useUser?.() || {};
@@ -50,6 +58,13 @@ const App = () => {
               <Route path="/profile" element={<Profile />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="*" element={<NotFound />} />
+              <Route path="*" element={<NotFound />} />
+              <Route path="/" element={<Index />} />
+              <Route path="/library/:title" element={<AudioLibraryPage />} />
+              <Route path="/videos/:title" element={<VideoPage />} /> 
+              <Route path="/breathing-exercises/:title" element={<BreathingExercisesPage />} />
+              <Route path="/games/:title" element={<InteractiveGamesPage />} />
+
             </Routes>
           </BrowserRouter>
         </UserProvider>

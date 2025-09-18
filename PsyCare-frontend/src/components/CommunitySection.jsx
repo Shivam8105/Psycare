@@ -189,7 +189,11 @@ export default function CommunityForum() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <FaUserCircle className="text-2xl text-gray-400" />
-                    <span className="font-semibold">{post.user}</span>
+                    <span className="font-semibold">
+                      {/* Add [mod] if not student */}
+                      {post.role && post.role !== "student" ? "[mod] " : ""}
+                      Anonymous
+                    </span>
                     <span className="text-gray-400 text-sm">
                       {new Date(post.createdAt).toLocaleString()}
                     </span>
