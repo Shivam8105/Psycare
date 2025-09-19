@@ -1,8 +1,8 @@
 import express from "express";
 import Forum from "../models/Forum.js";
 import PrivateMessage from "../models/PrivateMessage.js";
-import authMiddleware from "../middlewares/authMiddleware.js";
-import postMiddleware from "../middlewares/postMiddleware.js";
+import authMiddleware from "../middlewares/authmiddleware.js";
+import postMiddleware from "../middlewares/postmiddleware.js";
 
 const router = express.Router();
 

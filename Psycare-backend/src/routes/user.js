@@ -1,6 +1,6 @@
 import express from 'express';
 import { updateUserProfile , getUsersByRole} from '../controllers/userController.js';
-import { authenticateJWT } from '../middlewares/authMiddleware.js';
+import { authenticateJWT } from '../middlewares/authmiddleware.js';
 
 const router = express.Router();
 

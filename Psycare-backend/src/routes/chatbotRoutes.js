@@ -8,7 +8,7 @@ import translate from "google-translate-api-x";  // ✅ Translation API
 import Appointment from "../models/Appointments.js";
 import Conversation from "../models/Conversation.js";
 import User from "../models/User.js";
-import authMiddleware from "../middlewares/authMiddleware.js";
+import authMiddleware from "../middlewares/authmiddleware.js";
 import { sendSOSMail } from "../utils/sosMailer.js";
 
 dns.setDefaultResultOrder("ipv4first");

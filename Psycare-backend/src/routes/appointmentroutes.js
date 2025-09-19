@@ -1,6 +1,6 @@
 import express from "express";
 import Appointment from "../models/Appointments.js";
-import authMiddleware from "../middlewares/authMiddleware.js";
+import authMiddleware from "../middlewares/authmiddleware.js";
 import { nanoid } from "nanoid";
 
 const router = express.Router();
