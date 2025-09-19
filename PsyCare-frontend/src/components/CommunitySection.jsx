@@ -31,7 +31,7 @@ export default function CommunityForum() {
   useEffect(() => {
     setLoading(true);
     axios
-      .get("http://localhost:8080/api/forum", {
+      .get("https://psycare-dxmt.onrender.com/api/forum", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -52,7 +52,7 @@ export default function CommunityForum() {
     if (!newContent.trim()) return;
     try {
       const res = await axios.post(
-        "http://localhost:8080/api/forum",
+        "https://psycare-dxmt.onrender.com/api/forum",
         { title: newTitle || "General", content: newContent },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -81,7 +81,7 @@ export default function CommunityForum() {
   const handleLike = async (id) => {
     try {
       const res = await axios.post(
-        `http://localhost:8080/api/forum/${id}/like`,
+        `https://psycare-dxmt.onrender.com/api/forum/${id}/like`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -100,7 +100,7 @@ export default function CommunityForum() {
     if (!commentInputs[id]?.trim()) return;
     try {
       const res = await axios.post(
-        `http://localhost:8080/api/forum/${id}/reply`,
+        `https://psycare-dxmt.onrender.com/api/forum/${id}/reply`,
         { message: commentInputs[id] },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -121,7 +121,7 @@ export default function CommunityForum() {
     if (!privateMessage.trim() || !selectedUser) return;
     try {
       await axios.post(
-        "http://localhost:8080/api/forum/message",
+        "https://psycare-dxmt.onrender.com/api/forum/message",
         { message: privateMessage, to: selectedUser },
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -21,7 +21,7 @@ const AuthHandler = () => {
 
     if (token) {
       setLoading(true);
-      fetch('http://localhost:8080/api/auth/google/complete', {
+      fetch('https://psycare-dxmt.onrender.com/api/auth/google/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, role, name, email, avatar, funnyName })

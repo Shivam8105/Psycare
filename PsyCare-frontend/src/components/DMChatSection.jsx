@@ -12,14 +12,14 @@ export default function DMChatSection() {
   // Mark self online on mount
   useEffect(() => {
     if (token) {
-      fetch("http://localhost:8080/api/chat/online", {
+      fetch("https://psycare-dxmt.onrender.com/api/chat/online", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
     }
     return () => {
       if (token) {
-        fetch("http://localhost:8080/api/chat/offline", {
+        fetch("https://psycare-dxmt.onrender.com/api/chat/offline", {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -31,7 +31,7 @@ export default function DMChatSection() {
   useEffect(() => {
     if (!token) return;
     const fetchOnline = async () => {
-      const res = await fetch("http://localhost:8080/api/chat/online", {
+      const res = await fetch("https://psycare-dxmt.onrender.com/api/chat/online", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -46,7 +46,7 @@ export default function DMChatSection() {
   useEffect(() => {
     if (!selectedUser || !token) return;
     const fetchMessages = async () => {
-      const res = await fetch(`http://localhost:8080/api/chat/dm/${selectedUser._id}`, {
+      const res = await fetch(`https://psycare-dxmt.onrender.com/api/chat/dm/${selectedUser._id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -60,7 +60,7 @@ export default function DMChatSection() {
   // Send DM
   const handleSend = async () => {
     if (!newMessage.trim() || !selectedUser) return;
-    const res = await fetch("http://localhost:8080/api/chat/dm", {
+    const res = await fetch("https://psycare-dxmt.onrender.com/api/chat/dm", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -30,7 +30,7 @@ export default function AppointmentsPage() {
   // ---------------- Fetch appointments ----------------
   const fetchAppointments = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/appointments", {
+      const res = await fetch("https://psycare-dxmt.onrender.com/api/appointments", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -75,7 +75,7 @@ export default function AppointmentsPage() {
   // ---------------- Cancel appointment ----------------
   const handleCancel = async (id) => {
     try {
-      const res = await fetch(`http://localhost:8080/api/appointments/${id}`, {
+      const res = await fetch(`https://psycare-dxmt.onrender.com/api/appointments/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -105,7 +105,7 @@ export default function AppointmentsPage() {
       return;
     }
     try {
-      const res = await fetch("http://localhost:8080/api/appointments/clear", {
+      const res = await fetch("https://psycare-dxmt.onrender.com/api/appointments/clear", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

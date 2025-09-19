@@ -162,7 +162,7 @@ const TestPage = () => {
       }
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/tests/${testId}/questions`,
+          `https://psycare-dxmt.onrender.com/api/tests/${testId}/questions`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -211,7 +211,7 @@ const TestPage = () => {
       const payload = { userId, answers };
       console.log("Submitting payload:", payload);
       const response = await axios.post(
-        `http://localhost:8080/api/tests/${testId}/submit`,
+        `https://psycare-dxmt.onrender.com/api/tests/${testId}/submit`,
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },

@@ -68,7 +68,7 @@ const AuthSection = () => {
     try {
       let res, data;
       if (isSignUp) {
-        res = await fetch("http://localhost:8080/api/auth/signup", {
+        res = await fetch("https://psycare-dxmt.onrender.com/api/auth/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -81,7 +81,7 @@ const AuthSection = () => {
           }),
         });
       } else {
-        res = await fetch("http://localhost:8080/api/auth/login", {
+        res = await fetch("https://psycare-dxmt.onrender.com/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -288,7 +288,7 @@ const AuthSection = () => {
     className="flex items-center gap-2 border border-gray-200 rounded-lg px-6 py-2 text-lg font-semibold text-[#302aa2] bg-white hover:bg-gray-50 transition"
     onClick={() => {
       // Directly redirect to Google login, no role selection
-      window.location.href = `http://localhost:8080/api/auth/google`;
+      window.location.href = `https://psycare-dxmt.onrender.com/api/auth/google`;
     }}
   >
     <svg width="20" height="20" viewBox="0 0 24 24">

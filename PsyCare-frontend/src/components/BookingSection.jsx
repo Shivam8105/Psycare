@@ -36,7 +36,7 @@ export default function CounselorBooking() {
         return;
       }
       try {
-        const res = await fetch("http://localhost:8080/api/users?role=psychologist", {
+        const res = await fetch("https://psycare-dxmt.onrender.com/api/users?role=psychologist", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -63,7 +63,7 @@ export default function CounselorBooking() {
     try {
       const appointmentTime = new Date(`${selectedDate}T${selectedTime}`).toISOString();
 
-      const res = await fetch("http://localhost:8080/api/appointments", {
+      const res = await fetch("https://psycare-dxmt.onrender.com/api/appointments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

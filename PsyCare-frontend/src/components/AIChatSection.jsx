@@ -34,7 +34,7 @@ const AIChatSection = () => {
   let hotlines = [];
   let therapists = [];
     try {
-      const response = await fetch("http://localhost:8080/api/chat", {
+      const response = await fetch("https://psycare-dxmt.onrender.com/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -249,7 +249,7 @@ const AIChatSection = () => {
                             const { latitude, longitude } = pos.coords;
                             setUserLocation(`${latitude},${longitude}`);
                             // Send location to backend for SOS
-                            await fetch("http://localhost:8080/api/chat", {
+                            await fetch("https://psycare-dxmt.onrender.com/api/chat", {
                               method: "POST",
                               headers: {
                                 "Content-Type": "application/json",

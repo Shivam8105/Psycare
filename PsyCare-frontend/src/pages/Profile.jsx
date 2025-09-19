@@ -34,7 +34,7 @@ const Profile = () => {
     setSuccess("");
     try {
       const token = localStorage.getItem("token");
-  const res = await fetch("http://localhost:8080/api/users/update", {
+  const res = await fetch("https://psycare-dxmt.onrender.com/api/users/update", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

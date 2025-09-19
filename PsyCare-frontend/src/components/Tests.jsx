@@ -18,7 +18,7 @@ const Tests = () => {
 
     // fetch tests
     axios
-      .get("http://localhost:8080/api/tests", {
+      .get("https://psycare-dxmt.onrender.com/api/tests", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setTests(res.data))
@@ -28,7 +28,7 @@ const Tests = () => {
     // fetch all reports for user
     if (userId) {
       axios
-        .get(`http://localhost:8080/api/tests/user/${userId}/allreport`, {
+        .get(`https://psycare-dxmt.onrender.com/api/tests/user/${userId}/allreport`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
