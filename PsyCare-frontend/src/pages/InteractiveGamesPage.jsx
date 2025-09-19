@@ -1,33 +1,33 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import heroBackground from '@/assets/hero-illustration.jpg';
+import musicBackground from "@/assets/music_bg.jpg"; // relaxing music background
 
 // Hardcoded list of games with links to embeddable sources
 const games = [
   {
-    title: "Mindful Maze",
-    description: "Navigate a maze by staying calm and focused. Lose focus, and the walls disappear.",
-    game_url: "/games/mindful_maze_game.html"
+    title: "Maze Puzzle",
+    description: "Navigate a maze by staying calm and focused.",
+    game_url: "/games/mindful_maze_game.html",
   },
   {
     title: "Jigsaw Puzzle",
     description: "A simple puzzle game to calm your mind.",
-    game_url: "/games/jigsaw_puzzle_game.html"
+    game_url: "/games/jigsaw_puzzle_game.html",
   },
   {
-    title: "Classic Tetris",
-    description: "A fun and challenging game to improve your focus and concentration.",
-    game_url: "https://tetris.com/play-tetris"
+    title: "Save Your Snake",
+    description: "Eat food, grow your snake, but don’t hit the walls!",
+    game_url: "/games/snake_game.html",
   },
   {
-    title: "Jungle Bubble Shooter",
-    description: "A classic puzzle game that helps with focus and timing.",
-    game_url: "https://poki.com/en/g/jungle-bubble-shooter-mania?embed=1"
+    title: "Tic-Tac-Toe",
+    description: "Play Tic-Tac-Toe with dynamic board sizes (3x3, 4x4, 5x5).",
+    game_url: "/games/tictactoe.html", // ✅ your new game file
   },
   {
-    title: "Brain Test",
-    description: "A calming tile-matching game that sharpens your mind.",
-    game_url: "https://poki.com/en/g/brain-test-tricky-puzzles"
+    title: "Rock Paper Scissors",
+    description: "Challenge the computer in a classic Rock-Paper-Scissors game.",
+    game_url: "/games/rock_paper_scissors.html", // ✅ add your HTML file here
   },
 ];
 
@@ -62,8 +62,12 @@ export default function InteractiveGamesPage() {
 
   return (
     <div
-      className={`relative ${currentGameUrl ? 'min-h-screen bg-black' : 'min-h-screen py-12 px-4 bg-gray-50 bg-cover bg-center bg-fixed'}`}
-      style={currentGameUrl ? {} : { backgroundImage: `url(${heroBackground})` }}
+      className={`relative ${
+        currentGameUrl
+          ? "min-h-screen bg-black"
+          : "min-h-screen py-12 px-4 bg-cover bg-center bg-fixed"
+      }`}
+      style={currentGameUrl ? {} : { backgroundImage: `url(${musicBackground})` }}
     >
       {currentGameUrl && (
         <div
@@ -92,21 +96,31 @@ export default function InteractiveGamesPage() {
       {currentGameUrl === null && (
         <>
           <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-1"></div>
-          <div className="relative z-20 mx-auto max-w-4xl">
-            <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">{title}</h1>
-            <div className="space-y-6">
+          <div className="relative z-20 mx-auto max-w-5xl">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-10 text-center font-poppins drop-shadow-lg">
+              {title}
+            </h1>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               {games.map((game, index) => (
                 <div
                   key={index}
-                  className="bg-white rounded-xl shadow-lg p-6 flex justify-between items-center transition-transform hover:scale-105"
+                  className="
+                    bg-white/80 backdrop-blur-md border border-white/30
+                    rounded-3xl shadow-md hover:shadow-2xl
+                    transition-all hover:-translate-y-1
+                    flex flex-col justify-between p-6
+                  "
                 >
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-800">{game.title}</h2>
-                    <p className="text-sm text-gray-600 mt-1">{game.description}</p>
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      {game.title}
+                    </h2>
+                    <p className="text-sm text-gray-700 mt-2">{game.description}</p>
                   </div>
                   <button
                     onClick={() => handlePlayGame(game.game_url)}
-                    className="bg-violet-500 text-white px-6 py-2 rounded-full shadow-lg hover:bg-violet-600 transition-colors"
+                    className="mt-4 px-6 py-2 bg-gradient-to-r from-violet-400 to-purple-400 text-white rounded-full shadow-lg hover:from-violet-500 hover:to-purple-500 transition-colors"
                   >
                     Play
                   </button>

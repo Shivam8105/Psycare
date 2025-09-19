@@ -1,14 +1,13 @@
 import React, { useState, useRef } from "react";
 import { useParams } from "react-router-dom";
-import heroBackground from '@/assets/hero-illustration.jpg';
+import musicBackground from "@/assets/music_bg.jpg";
 
-// Helper function to convert a watch URL to an embed URL
+// Helper function to convert a YouTube URL to embed URL
 const getEmbedUrl = (url) => {
   const videoId = url.split("v=")[1].split("&")[0];
   return `https://www.youtube.com/embed/${videoId}`;
 };
 
-// Initial data for the videos
 const videos = [
   {
     id: "rkZl2gsLUp4",
@@ -50,46 +49,51 @@ const videos = [
 
 export default function VideoPage() {
   const { title } = useParams();
-  
-  const [currentVideo, setCurrentVideo] = useState(videos[videos.length - 1].url + "?autoplay=1&rel=0");
+  const [currentVideo, setCurrentVideo] = useState(
+    videos[videos.length - 1].url + "?autoplay=1&rel=0"
+  );
   const videoRef = useRef(null);
 
   const handleVideoClick = (videoUrl) => {
-    // Update the state with the URL of the clicked video and include autoplay and no-recommendations
     setCurrentVideo(videoUrl + "?autoplay=1&rel=0");
-    // This will scroll the page to the very top, which is what you wanted
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
     <div
-      className="min-h-screen relative p-4 bg-gray-50 bg-cover bg-center bg-fixed"
-      style={{ backgroundImage: `url(${heroBackground})` }}
+      className="min-h-screen relative w-full overflow-hidden"
+      style={{
+        backgroundImage: `url(${musicBackground})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
     >
-      <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-1"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-white/10 backdrop-blur-sm  z-0"></div>
 
-      <div className="relative z-20 mx-auto py-12 px-2 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">{title}</h1>
+      <div className="relative z-10 flex flex-col items-center justify-start min-h-screen py-10 px-4">
+        <h1 className="text-4xl md:text-5xl font-bold text-black mb-10 text-center font-poppins drop-shadow-lg">
+          {title}
+        </h1>
 
-        <div className="max-w-4xl mx-auto bg-gradient-to-br from-violet-200/70 to-pink-200/70 rounded-xl shadow-2xl overflow-hidden mb-12 p-6" ref={videoRef}>
-          <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
-            <iframe
-              className="w-full h-full"
-              src={currentVideo}
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
-          </div>
+        {/* Full-screen Video */}
+        <div className="w-full max-w-7xl aspect-video mb-12 shadow-2xl rounded-xl overflow-hidden">
+          <iframe
+            className="w-full h-full"
+            src={currentVideo}
+            title="YouTube video player"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {videos.map((video, index) => (
+        {/* Video Thumbnails */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl">
+          {videos.map((video) => (
             <div
               key={video.id}
               onClick={() => handleVideoClick(video.url)}
-              className="cursor-pointer bg-white rounded-xl shadow-lg overflow-hidden transition-transform hover:scale-105"
+              className="cursor-pointer relative overflow-hidden rounded-xl shadow-xl transition-transform hover:scale-105 hover:shadow-2xl"
             >
               <div className="relative aspect-video">
                 <img
@@ -97,10 +101,11 @@ export default function VideoPage() {
                   alt={video.title}
                   className="w-full h-full object-cover"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
               </div>
-              <div className="p-4">
-                <h2 className="text-lg font-semibold text-gray-800">{video.title}</h2>
-                <p className="text-sm text-gray-600 mt-1">{video.description}</p>
+              <div className="p-4 bg-white/70 backdrop-blur-md">
+                <h2 className="text-lg font-semibold text-gray-900">{video.title}</h2>
+                <p className="text-sm text-gray-700 mt-1">{video.description}</p>
               </div>
             </div>
           ))}

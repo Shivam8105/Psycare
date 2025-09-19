@@ -58,6 +58,7 @@ const App = () => {
               <Route path="/auth" element={<AuthSelection />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/games/:title" element={<InteractiveGamesPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

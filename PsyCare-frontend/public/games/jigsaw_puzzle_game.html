@@ -5,33 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jigsaw Puzzle</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
         body {
-            background-color: #f0e6f2;
-            font-family: 'Arial', sans-serif;
+            /* Local background image and styling */
+            background-image: url('../../src/assets/music_bg.jpg'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: #4a4a4a;
+            color: #ffffff;
             user-select: none;
-            /* overflow: hidden;  <-- This was the problem, so it's removed */
+            position: relative;
+        }
+
+        /* Frosted glass overlay */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.1) 100%);
+            backdrop-filter: blur(8px);
+            z-index: -1;
         }
 
         h1 {
             font-size: 2.5em;
-            color: #5d3f6a;
+            color: #333;
             margin-bottom: 20px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+
+        .game-container {
+            /* Main container for the puzzle and controls */
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+            width: fit-content;
+            z-index: 1;
+            position: relative;
+            transition: all 0.3s ease-in-out;
+            border-bottom: 5px solid rgba(166, 130, 227, 0.5);
+            margin: 20px;
+        }
+
+        .game-container:hover {
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
         }
 
         #puzzle-container {
             display: grid;
-            border: 5px solid #d4a7d4;
-            background-color: #fff;
+            border: 5px solid #a682e3; /* Purple border */
+            background-color: rgba(255, 255, 255, 0.6);
             border-radius: 15px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            transition: all 0.3s ease;
         }
         
         .puzzle-piece {
@@ -43,52 +87,60 @@
         }
         
         .puzzle-piece:hover {
-            box-shadow: inset 0 0 0 3px #8c5a96;
+            box-shadow: inset 0 0 0 3px #6a1b9a;
         }
 
         .puzzle-piece.dragging {
             opacity: 0.8;
             cursor: grabbing;
             z-index: 1000;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
 
         #controls {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 25px;
+            z-index: 1;
         }
 
         #status {
             font-size: 1.2em;
-            margin-top: 10px;
-            font-weight: bold;
-            color: #5d3f6a;
+            margin-top: 15px;
+            font-weight: 600;
+            color: #333;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.2);
         }
 
         #reset-button {
-            padding: 12px 24px;
+            padding: 12px 28px;
             font-size: 1em;
-            color: #fff;
-            background-color: #8c5a96;
+            color: #ffffff;
+            background: linear-gradient(135deg, #a682e3 0%, #6a1b9a 100%);
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s ease-in-out;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         #reset-button:hover {
-            background-color: #72477c;
             transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+            opacity: 0.9;
         }
     </style>
 </head>
 <body>
     <h1>Jigsaw Puzzle</h1>
-    <div id="puzzle-container"></div>
+    <div class="game-container">
+        <div id="puzzle-container"></div>
+        <div id="status">Drag and drop pieces to solve the puzzle!</div>
+    </div>
     <div id="controls">
         <button id="reset-button">Reset</button>
     </div>
-    <div id="status">Drag and drop pieces to solve the puzzle!</div>
 
     <script>
         const puzzleContainer = document.getElementById('puzzle-container');
@@ -163,23 +215,22 @@
         puzzleContainer.addEventListener('dragover', (e) => {
             e.preventDefault();
             const target = e.target;
-            // Add a visual cue for the drop target
             if (target && target.classList.contains('puzzle-piece') && dragged !== target) {
-                target.style.boxShadow = 'inset 0 0 0 5px #ff5733';
+                target.style.boxShadow = 'inset 0 0 0 5px #4575bf';
             }
         });
 
         puzzleContainer.addEventListener('dragleave', (e) => {
             const target = e.target;
             if (target && target.classList.contains('puzzle-piece')) {
-                target.style.boxShadow = ''; // Reset the box-shadow
+                target.style.boxShadow = '';
             }
         });
         
         puzzleContainer.addEventListener('drop', (e) => {
             e.preventDefault();
             const target = e.target;
-            target.style.boxShadow = ''; // Reset box-shadow on drop
+            target.style.boxShadow = '';
             if (target && target.classList.contains('puzzle-piece') && dragged !== target) {
                 swapPieces(dragged, target);
             }
@@ -190,7 +241,6 @@
         function swapPieces(piece1, piece2) {
             const parent = piece1.parentNode;
             
-            // Create a temporary placeholder to maintain the correct DOM structure
             const temp = document.createElement('div');
             parent.insertBefore(temp, piece2);
             parent.insertBefore(piece2, piece1);
@@ -209,10 +259,10 @@
             }
             if (solved) {
                 isSolving = false;
-                statusDiv.textContent = 'Congratulations! You solved the puzzle!';
+                statusDiv.textContent = 'Congratulations! You solved the puzzle! 🎉';
                 const pieces = puzzleContainer.children;
                 for (const piece of pieces) {
-                    piece.style.border = 'none';
+                    piece.style.border = '1px solid rgba(255,255,255,0.3)';
                     piece.draggable = false;
                 }
             }
