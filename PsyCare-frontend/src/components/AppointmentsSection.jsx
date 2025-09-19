@@ -106,11 +106,12 @@ export default function AppointmentsPage() {
     }
     try {
       const res = await fetch("http://localhost:8080/api/appointments/clear", {
-        method: "DELETE",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({})
       });
       if (!res.ok) throw new Error("Failed to clear appointments");
       setAppointments([]);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   FaLeaf,
   FaBed,
@@ -6,10 +6,11 @@ import {
   FaBrain,
   FaPhoneAlt,
   FaGamepad,
-  FaVideo,
+  FaVideo
 } from "react-icons/fa";
 import girlImage from "/src/assets/hero-illustration.jpg";
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom"; // <-- for linking
+import { useNavigate } from "react-router-dom"; 
 
 const categories = [
   "All",
@@ -26,17 +27,21 @@ const resources = [
     title: "Stress Management",
     tag: "Popular",
     rating: 4.8,
-    description: "Learn effective techniques to manage academic and personal stress",
+    description:
+      "Learn effective techniques to manage academic and personal stress",
     details: "12 exercises",
     icon: <FaLeaf className="text-emerald-500 text-2xl" />,
+    route: "/stress-management"
   },
   {
     title: "Sleep Audio Library",
     tag: "Trending",
     rating: 4.9,
-    description: "Guided meditations and calming sounds for better sleep",
+    description:
+      "Guided meditations and calming sounds for better sleep",
     details: "25 audios",
     icon: <FaBed className="text-blue-500 text-2xl" />,
+    route: "/sleep-library"
   },
   {
     title: "Breathing Exercises",
@@ -45,6 +50,7 @@ const resources = [
     description: "Simple breathing techniques for anxiety and relaxation",
     details: "8 techniques",
     icon: <FaWind className="text-cyan-500 text-2xl" />,
+    route: "/breath"
   },
   {
     title: "Mindfulness Practice",
@@ -53,7 +59,8 @@ const resources = [
     description: "Daily mindfulness exercises to improve mental clarity",
     details: "15 practices",
     icon: <FaBrain className="text-violet-500 text-2xl" />,
-  },
+    route: "/mindfulness"
+  },  
   {
     title: "Overcoming Depression",
     tag: "Essential",
@@ -61,6 +68,7 @@ const resources = [
     description: "Watch motivational videos and talks to help lift your spirits.",
     details: "10 videos",
     icon: <FaVideo className="text-purple-500 text-2xl" />,
+    route: "/video-library"
   },
   {
     title: "Interactive Games",
@@ -69,25 +77,24 @@ const resources = [
     description: "Fun games designed to boost mood and reduce anxiety",
     details: "6 games",
     icon: <FaGamepad className="text-pink-500 text-2xl" />,
+    route: "/interactive-games"
   },
 ];
 
 export default function Resources() {
-  const [selectedTag, setSelectedTag] = useState("All");
-
-  const filteredResources = selectedTag === "All"
-    ? resources
-    : resources.filter(res => res.tag === selectedTag);
-
+  const navigate = useNavigate();
+  
   return (
     <div
       className="relative min-h-screen overflow-x-hidden bg-cover bg-center bg-fixed"
       style={{ backgroundImage: `url(${girlImage})` }}
       id="resources"
     >
+      {/* overlay */}
       <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-1"></div>
 
       <div className="relative z-10 max-w-7xl mx-auto py-12 px-4">
+        {/* Heading */}
         <div className="text-center mb-10">
           <h2 className="text-4xl font-bold text-gray-900 mb-2">
             Wellness Resources Hub
@@ -102,9 +109,7 @@ export default function Resources() {
           {categories.map((cat, idx) => (
             <button
               key={idx}
-              onClick={() => setSelectedTag(cat)}
-              className={`px-4 py-1.5 rounded-full border text-sm shadow-sm transition
-                ${selectedTag === cat ? "bg-violet-500 text-white border-violet-500" : "bg-white/70 text-gray-900 border-black/5 hover:bg-white"}`}
+              className="px-4 py-1.5 rounded-full bg-white/70 border border-black/5 text-gray-900 hover:bg-white transition text-sm shadow-sm"
             >
               {cat}
             </button>
@@ -113,45 +118,35 @@ export default function Resources() {
 
         {/* Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredResources.map((res, idx) => (
-            <Link 
-              to={
-                res.title === "Sleep Audio Library" ? `/library/${res.title}` :
-                res.title === "Overcoming Depression" ? `/videos/${res.title}` :
-                res.title === "Breathing Exercises" ? `/breathing-exercises/${res.title}` :
-                res.title === "Interactive Games" ? `/games/${res.title.replace(/\s+/g, '-')}` :
-                `/resources/${res.title.replace(/\s+/g, '-')}` // Placeholder link for other cards
-              }
+          {resources.map((res, idx) => (
+            <div
               key={idx}
+              className="bg-white rounded-xl p-4 shadow hover:shadow-lg hover:-translate-y-0.5 transition duration-300"
             >
-              <div
-                className="bg-white rounded-xl p-4 shadow hover:shadow-lg hover:-translate-y-0.5 transition duration-300"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div>{res.icon}</div>
-                  <h5 className="text-lg font-medium text-gray-900">{res.title}</h5>
-                </div>
-
-                <div className="flex justify-between items-center mb-2">
-                  <span className="bg-gray-50 text-gray-600 px-2 py-0.5 rounded-md text-xs font-medium">
-                    {res.tag}
-                  </span>
-                  <span className="text-yellow-500 text-sm font-medium">⭐ {res.rating}</span>
-                </div>
-
-                <p className="text-gray-600 text-sm leading-relaxed mb-2">{res.description}</p>
-                <small className="text-gray-500 text-xs">{res.details}</small>
-
-                <div className="mt-3 flex gap-2">
-                  <button className="px-3 py-1.5 rounded-lg bg-violet-400 text-white hover:bg-violet-500 text-sm transition">
-                    Start
-                  </button>
-                  <button className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm transition">
-                    Preview
-                  </button>
-                </div>
+              <div className="flex items-center gap-3 mb-3">
+                <div>{res.icon}</div>
+                <h5 className="text-lg font-medium text-gray-900">{res.title}</h5>
               </div>
-            </Link>
+
+              <div className="flex justify-between items-center mb-2">
+                <span className="bg-gray-50 text-gray-600 px-2 py-0.5 rounded-md text-xs font-medium">
+                  {res.tag}
+                </span>
+                <span className="text-yellow-500 text-sm font-medium">⭐ {res.rating}</span>
+              </div>
+
+              <p className="text-gray-600 text-sm leading-relaxed mb-2">{res.description}</p>
+              <small className="text-gray-500 text-xs">{res.details}</small>
+
+              <div className="mt-3 flex gap-2">
+                <button className="px-3 py-1.5 rounded-lg bg-violet-400 text-white hover:bg-violet-500 text-sm transition" onClick={() => navigate(res.route)}>
+                  Start
+                </button>
+                <button className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm transition">
+                  Preview
+                </button>
+              </div>
+            </div>
           ))}
 
           {/* Slim Card for Testing */}

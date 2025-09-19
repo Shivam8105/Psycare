@@ -1,12 +1,12 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import VideoMeetComponent from "./components/Meetings.jsx";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider } from "./context/UserContext.jsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index.jsx";
-import ChatSection from "./components/ChatSection.jsx";
 import AppointmentsSection from "./components/AppointmentsSection.jsx";
 import Ai_chat from "./components/AIChatSection.jsx";
 import BookingSection from "./components/BookingSection.jsx";
@@ -21,13 +21,13 @@ import Profile from "./pages/Profile.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import AuthHandler from "./AuthHandler.jsx";
 import TestPage from "./components/TestPage.jsx";
-
+import BreathPage from "./pages/BreathPage.jsx";
 import AudioLibraryPage from "./pages/AudioLibraryPage.jsx";
-import VideoPage from "./pages/VideoPage.jsx";
-import ScrollToTop from "./ScrollToTop.jsx";
-import BreathingExercisesPage from "./pages/BreathingExercisesPage.jsx";
+import StressManagement from "./pages/StressManagement.jsx";
 import InteractiveGamesPage from "./pages/InteractiveGamesPage.jsx";
-
+import ResourceDetail from "./pages/ResourceDetail.jsx";
+import MindfulnessPage from "./pages/MindfulnessPage.jsx";
+import VideoPage from "./pages/VideoPage.jsx";
 
 const queryClient = new QueryClient();
 
@@ -51,14 +51,21 @@ const App = () => {
               <Route path="/appointments" element={<AppointmentsSection />} />
               <Route path="/book" element={<BookingSection />} />
               <Route path="/resources" element={<WellnessResources />} />
+              <Route path="/resources/:resourceName" element={<ResourceDetail />} />
               <Route path="/api/tests/:testId/questions" element={<TestPage />} />
               <Route path="/community" element={<CommunitySection />} />
+              <Route path="/stress-management" element={<StressManagement />} />
+              <Route path="/breath" element={<BreathPage />} />
+              <Route path="/sleep-library" element={<AudioLibraryPage />} />
+              <Route path="/mindfulness" element={<MindfulnessPage />} />
               <Route path="/ai-chat" element={<Ai_chat />} />
               <Route path="/tests" element={<Tests />} />
               <Route path="/auth" element={<AuthSelection />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/games/:title" element={<InteractiveGamesPage />} />
+              <Route path="/interactive-games" element={<InteractiveGamesPage />} />
+              <Route path="/video-library" element={<VideoPage />} />
+              <Route path="/:url" element={<VideoMeetComponent />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

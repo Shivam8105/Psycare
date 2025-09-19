@@ -1,10 +1,27 @@
 import express from "express";
 import Appointment from "../models/Appointments.js";
-import authMiddleware from "../middlewares/authmiddleware.js";
+import authMiddleware from "../middlewares/authMiddleware.js";
 import { nanoid } from "nanoid";
 
 const router = express.Router();
 
+
+// Clear all appointments for the logged-in user
+router.post("/clear", authMiddleware, async (req, res) => {
+  try {
+    let result;
+    if (req.user?.role?.toLowerCase() === "student") {
+      result = await Appointment.deleteMany({ studentId: req.user.id });
+    } else if (req.user?.role?.toLowerCase() === "psychologist") {
+      result = await Appointment.deleteMany({ psychologistId: req.user.id });
+    } else {
+      return res.status(403).json({ error: "Access denied. Invalid role.", user: req.user });
+    }
+    res.json({ message: "All appointments cleared", deletedCount: result.deletedCount });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // ✅ 1. Student books appointment (with conflict check)
 router.post("/", authMiddleware, async (req, res) => {
   if (req.user.role !== "student") return res.status(403).json({ error: "Only students can book" });

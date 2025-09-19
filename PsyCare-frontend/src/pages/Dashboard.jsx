@@ -105,22 +105,32 @@ const Dashboard = () => {
   const [nextApptDetails, setNextApptDetails] = useState(null);
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch("http://localhost:8080/api/appointments?limit=1", {
+    fetch("http://localhost:8080/api/appointments", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(data => {
         if (data && data.data && data.data.length > 0) {
-          const appt = data.data[0];
-          setNextApptDetails({
-            name: appt.psychologistId?.name || "Psychologist",
-            email: appt.psychologistId?.email || "",
-            status: appt.status,
-            date: new Date(appt.appointmentTime).toLocaleDateString(),
-            time: new Date(appt.appointmentTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            duration: appt.duration,
-          });
-          setStats(prev => ({ ...prev, nextAppointment: null }));
+          // Filter appointments ahead of current time
+          const now = Date.now();
+          const upcoming = data.data.filter(appt => new Date(appt.appointmentTime).getTime() > now);
+          if (upcoming.length > 0) {
+            // Sort by soonest
+            upcoming.sort((a, b) => new Date(a.appointmentTime) - new Date(b.appointmentTime));
+            const appt = upcoming[0];
+            setNextApptDetails({
+              name: appt.psychologistId?.name || "Psychologist",
+              email: appt.psychologistId?.email || "",
+              status: appt.status,
+              date: new Date(appt.appointmentTime).toLocaleDateString(),
+              time: new Date(appt.appointmentTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              duration: appt.duration,
+            });
+            setStats(prev => ({ ...prev, nextAppointment: null }));
+          } else {
+            setNextApptDetails(null);
+            setStats(prev => ({ ...prev, nextAppointment: "No upcoming appointments" }));
+          }
         } else {
           setNextApptDetails(null);
           setStats(prev => ({ ...prev, nextAppointment: "No upcoming appointments" }));
@@ -274,16 +284,27 @@ const Dashboard = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">Next Appointment</p>
-                        {nextApptDetails ? (
-                          <div className="space-y-1">
-                            <p className="text-lg font-bold text-gray-800">{nextApptDetails.name}</p>
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className="inline-flex items-center"><Clock className="w-4 h-4 mr-1 text-orange-600" />{nextApptDetails.date} {nextApptDetails.time}</span>
+                        {(() => {
+                          if (!nextApptDetails) {
+                            return <p className="text-lg font-bold text-gray-800">{stats.nextAppointment}</p>;
+                          }
+                          // Parse appointment date/time
+                          const apptDateTime = new Date(`${nextApptDetails.date} ${nextApptDetails.time}`);
+                          const now = new Date();
+                          // If appointment time has passed, show 'No upcoming appointments'
+                          if (apptDateTime.getTime() <= now.getTime()) {
+                            return <p className="text-lg font-bold text-gray-800">No upcoming appointments</p>;
+                          }
+                          // Otherwise, show upcoming appointment
+                          return (
+                            <div className="space-y-1">
+                              <p className="text-lg font-bold text-gray-800">{nextApptDetails.name}</p>
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="inline-flex items-center"><Clock className="w-4 h-4 mr-1 text-orange-600" />{nextApptDetails.date} {nextApptDetails.time}</span>
+                              </div>
                             </div>
-                          </div>
-                        ) : (
-                          <p className="text-lg font-bold text-gray-800">{stats.nextAppointment}</p>
-                        )}
+                          );
+                        })()}
                       </div>
                       <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
                         <Clock className="w-6 h-6 text-orange-600" />

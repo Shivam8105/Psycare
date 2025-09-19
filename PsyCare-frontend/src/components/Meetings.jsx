@@ -15,7 +15,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate, useLocation } from "react-router-dom";
 import PersonIcon from '@mui/icons-material/Person';
 
-const server_url = "http://localhost:5000";
+const server_url = "http://localhost:5001";
 var connections = {};
 const peerConfigreConnections = {
   "iceServers": [

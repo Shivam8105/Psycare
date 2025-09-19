@@ -31,7 +31,7 @@ export const scheduleMeeting = async (req, res) => {
     await meeting.save();
 
     // Use your domain for the meeting link
-    const meetingLink = `http://localhost:5000/meeting/${meetingCode}`;
+    const meetingLink = `http://localhost:5001/meeting/${meetingCode}`;
 
     res.status(201).json({ success: true, meeting, meetingLink });
   } catch (error) {
