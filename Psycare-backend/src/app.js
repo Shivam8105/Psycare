@@ -12,6 +12,7 @@ import appointment from "./routes/appointmentroutes.js";
 import chatRoutes from "./routes/chatbotRoutes.js";
 import wellnessRoutes from "./routes/wellnessRoutes.js";
 import userRoutes from "./routes/user.js";
+import testRoutes from "./routes/TestRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -25,6 +26,7 @@ app.use(cors({
 app.use(bodyParser.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/tests", testRoutes);
 app.use("/api", chatRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/appointments", appointment);
