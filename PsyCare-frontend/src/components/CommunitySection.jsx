@@ -32,7 +32,7 @@ export default function CommunityForum() {
     setLoading(true);
     axios
       .get("https://psycare-dxmt.onrender.com/api/forum", {
-        headers: { Authorization: `Bearer ${token}` },
+        // headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
         setPosts(Array.isArray(res.data) ? res.data : []);
