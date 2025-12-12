@@ -1,5 +1,3 @@
-
-// Express backend setup
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -17,14 +15,25 @@ import testRoutes from "./routes/TestRoutes.js";
 dotenv.config();
 const app = express();
 
-app.use(express.json());
+// -------------------------
+// FIXED: CORS MUST BE FIRST
+// -------------------------
 app.use(cors({
-  origin: ["https://psycare-frontend.onrender.com"],
+  origin: ["http://localhost:5000/", "https://psycare-frontend.onrender.com"],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
+
+app.options("*", cors()); // allow preflight globally
+
+// Now JSON parsers can run
+app.use(express.json());
 app.use(bodyParser.json());
 
+// -------------------------
+// Routes
+// -------------------------
 app.use("/api/auth", authRoutes);
 app.use("/api/tests", testRoutes);
 app.use("/api", chatRoutes);
